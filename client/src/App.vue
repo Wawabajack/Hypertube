@@ -2,7 +2,7 @@
   <div id="app">
     <navbar v-if="user_session"/>
     <transition name="el-fade-in" mode="out-in">
-      <router-view class="container-fluid"/>
+      <router-view/>
     </transition>
     <footerbar v-if="user_session"/>
   </div>

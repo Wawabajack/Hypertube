@@ -105,10 +105,10 @@ const actions = {
 
 
 
-  search: (store, page) => {
+  search: (store, vue) => {
     let uri = `http://${ip}/torrent/search`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { search: store.state.search, page: page, lang: store.state.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { search: store.state.search, page: vue.page, lang: store.state.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })
@@ -132,7 +132,7 @@ const actions = {
   watch: (store, vue) => {
     let uri = `http://${ip}/torrent/watch`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieTitle: vue.movie.title, movieId: vue.movie.imdbid, torrentPath: vue.torrentPath, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { movieTitle: vue.movie.title, movieId: vue.movie.imdbid, movieMagnet: vue.hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })

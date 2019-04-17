@@ -1,12 +1,36 @@
 <template>
     <div class="container-fluid">
+        <div class="row sort">
+            <div class="offset-md-1 col-md-4 sort-options">
+                <h3>{{ $store.state.lang === 'en' ? 'Sorted by' : 'Triée par' }}</h3>
+                <p>{{ $store.state.lang === 'en' ? 'Title' : 'Titre' }}</p>
+                <el-radio-group v-model="title" size="mini" :disabled="vote_average != 'Aucun' || date_release != 'Aucun'">
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'None' : 'Aucun'"></el-radio-button>
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'Descending' : 'Décroissant'"></el-radio-button>
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'Ascending' : 'Croissant'"></el-radio-button>
+                </el-radio-group>
+                <p>{{ $store.state.lang === 'en' ? 'Popularity' : 'Popularité' }}</p>
+                <el-radio-group v-model="vote_average" size="mini" :disabled="title != 'Aucun' || date_release != 'Aucun'">
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'None' : 'Aucun'"></el-radio-button>
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'Descending' : 'Décroissant'"></el-radio-button>
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'Ascending' : 'Croissant'"></el-radio-button>
+                </el-radio-group>
+                <p>{{ $store.state.lang === 'en' ? 'Release date' : 'Date de sortie' }}</p>
+                <el-radio-group v-model="date_release" size="mini" :disabled="vote_average != 'Aucun' || title != 'Aucun'">
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'None' : 'Aucun'"></el-radio-button>
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'Descending' : 'Décroissant'"></el-radio-button>
+                    <el-radio-button :label="$store.state.lang === 'en' ? 'Ascending' : 'Croissant'"></el-radio-button>
+                </el-radio-group>
+            </div>
+            <div class="col-md-7 sort-request">
+                <h3>Request By</h3>
+            </div>
+        </div>
         <div class="searchedMovies">
             <ul class="search-container list-searchedMovies">
-                <div v-for="(movie, index) in movies" :key="`movie-${index}`">
-                    <li class="item-searchedMovie" v-for="(mov, ind) in movie" :key="`mov-${ind}`">
-                        <box-search :movie="mov" :userMovies="userMovies"/>
-                    </li>
-                </div>
+                <li class="item-searchedMovie" v-for="(movie, index) in movies" :key="`mov-${index}`">
+                    <box-search :movie="movie" :userMovies="userMovies"/>
+                </li>
             </ul>
         </div>
     </div>
@@ -22,16 +46,37 @@ export default {
     data() {
         return {
             movies: [],
+            tmp: [],
             page: 1,
-            userMovies: {}
+            userMovies: {},
+
+            vote_average: 'Aucun',
+            date_release: 'Aucun',
+            title: 'Aucun'
         }
     },
     watch: {
 		'$store.state.search' (n, o) {
             this.page = 1
             this.movies = []
+            this.tmp = []
             this.getMoviesList()
-		}
+        },
+        title() {
+            if (this.title === 'Décroissant') this.movies.sort((a,b) => { return (a.title > b.title) ? 1 : ((b.title > a.title) ? -1 : 0) })
+            else if (this.title === 'Croissant') this.movies.sort((a, b) => { return (a.title > b.title) ? -1 : ((b.title > a.title) ? 1 : 0) })
+            else this.movies = this.tmp.slice(0)
+        },
+        vote_average() {
+            if (this.vote_average === 'Décroissant') this.movies.sort((a, b) => { return b.vote_average - a.vote_average })
+            else if (this.vote_average === 'Croissant') this.movies.sort((a, b) => { return a.vote_average - b.vote_average })
+            else this.movies = this.tmp.slice(0)
+        },
+        date_release() {
+            if (this.date_release === 'Décroissant') this.movies.sort((a, b) => { var d1 = new Date(b.release_date).getTime(); var d2 = new Date(a.release_date).getTime(); return d1 - d2 })
+            else if (this.date_release === 'Croissant') this.movies.sort((a, b) => { var d1 = new Date(b.release_date).getTime(); var d2 = new Date(a.release_date).getTime(); return d2 - d1 })
+            else this.movies = this.tmp.slice(0)
+        }
 	},
     beforeCreate() {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
@@ -45,8 +90,13 @@ export default {
     },
     methods: {
         async getMoviesList() {
-            var result = await this.$store.dispatch('search', this.page)
-            if (result) if (result.data.success) this.movies.push(result.data.data.movies)
+            var result = await this.$store.dispatch('search', this)
+            if (result) if (result.data.success) {
+                result.data.data.movies.forEach(movie => {
+                    this.tmp.push(movie)
+                    this.movies.push(movie)
+                });
+            }
         },
         scroll() {
             window.onscroll = () => {
@@ -78,6 +128,14 @@ export default {
 .searchedMovies {
     margin-top: 58px;
 }
+.sort {
+    text-align: center;
+    margin-top: 116px;
+}
+.sort h3 {
+    padding: 15px;
+    color: white
+}
 .searchedMovies h3 {
     text-align: center;
     text-transform: uppercase;
@@ -99,5 +157,16 @@ export default {
     list-style: none;
     padding: 0;
     margin: 25px 0 25px;
+}
+.sort p {
+    color: white;
+    font-size: small;
+}
+.el-radio-button__orig-radio:checked+.el-radio-button__inner {
+    color: #FFF;
+    background-color: lightcoral;
+    border-color: lightcoral;
+    -webkit-box-shadow: -1px 0 0 0 lightcoral;
+    box-shadow: -1px 0 0 0 lightcoral;
 }
 </style>

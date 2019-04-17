@@ -1,5 +1,5 @@
 <template>
-    <main role="main" class="p404 container">
+    <main role="main" class="p404 container-fluid">
         <Box404/>
     </main>
 </template>

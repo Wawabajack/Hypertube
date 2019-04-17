@@ -7,7 +7,6 @@ const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
 const fs = require('fs')
 const rarbgApi = require('rarbg-api')
 const srt2vtt = require('srt-to-vtt')
-const allocine = require('allocine-api')
 
 module.exports.getRecommandedMovies = (data) => {
     return new Promise((fullfil, reject) => {
@@ -137,27 +136,18 @@ module.exports.downloadTorrent = (data) => {
 
 module.exports.saveTorrent = (data) => {
     return new Promise((fullfil, reject) => {
-        mongodb.collection('movies').findOne({ id: data.params.movieId }, (err, result) => {
+        mongodb.collection('movies').findOne({ id: data.params.movieId, magnet: data.params.movieMagnet, path: data.params.torrentPath.split('/')[0], file: data.params.torrentFilename }, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else {
-                if (result) {
-                    var downloadedTorrents = result.downloadedTorrents
-                    if (downloadedTorrents.findIndex( torrent => { return torrent.hash === data.params.movieMagnet }) >= 0) fullfil(data)
-                    else {
-                        var torrent = { hash: data.params.movieMagnet, path: data.params.torrentPath }
-                        downloadedTorrents.push(torrent)
-                        mongodb.collection('movies').updateOne({ id: data.params.movieId }, { $set : { downloadedTorrents: downloadedTorrents }}, (err, result) => {
-                            if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                            else fullfil(data)
-                        })
-                    }
-                } else {
-                    var torrent = { hash: data.params.movieMagnet, path: data.params.torrentPath }
-                    mongodb.collection('movies').insertOne({ id: data.params.movieId, downloadedTorrents: [ torrent ] }, (err, result) => {
-                        if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                        else fullfil(data)
-                    })
-                }
+            else if (result) {
+                mongodb.collection('movies').updateOne({ id: data.params.movieId, magnet: data.params.movieMagnet, path: data.params.torrentPath.split('/')[0], file: data.params.torrentFilename }, { $set : { lastSeen: new Date() }}, (err, result) => {
+                    if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+                    else fullfil(data)
+                })
+            } else {
+                mongodb.collection('movies').insertOne({ id: data.params.movieId, magnet: data.params.movieMagnet, path: data.params.torrentPath.split('/')[0], file: data.params.torrentFilename, lastSeen: new Date() }, (err, result) => {
+                    if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+                    else fullfil(data)
+                })
             }
         })
     })
@@ -175,8 +165,7 @@ module.exports.downloadSubtitles = (data) => {
                 var items = 0 
                 language.forEach(lang => {
                     request.get({
-                        url: results[lang].utf8,
-                        headers: { 'Content-Type' : 'application/json; charset=utf-8' }
+                        url: results[lang].utf8
                     }, (error, response, body) => {
                         if (error) reject({ res: data.res, en_error: error, fr_error: error })
                         else {
@@ -206,16 +195,14 @@ module.exports.downloadSubtitles = (data) => {
 
 module.exports.saveDate = (data) => {
     return new Promise((fullfil, reject) => {
-        mongodb.collection('movies').findOne({ id: data.params.movieId }, (err, result) => {
+        mongodb.collection('movies').findOne({ id: data.params.movieId, magnet: data.params.movieMagnet }, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else {
-                if (result) {
-                    mongodb.collection('movies').updateOne({ id: data.params.movieId }, { $set : { lastSeen: Date('Y-m-j') }}, (err, result) => {
-                        if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                        else fullfil(data)
-                    })
-                } else reject({ res: data.res, en_error: 'This movie has not been downloaded', fr_error: 'Ce film n\'a jamais été téléchargé' })
-            }
+            else if (result) {
+                mongodb.collection('movies').updateOne({ id: data.params.movieId, magnet: data.params.movieMagnet }, { $set : { lastSeen: Date('Y-m-j') }}, (err, result) => {
+                    if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+                    else fullfil(data)
+                })
+            } else reject({ res: data.res, en_error: 'This movie has not been downloaded', fr_error: 'Ce film n\'a jamais été téléchargé' })
         })
     })
 }

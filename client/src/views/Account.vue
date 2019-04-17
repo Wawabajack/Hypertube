@@ -1,5 +1,5 @@
 <template>
-    <div class='account-container'>
+    <div class='account-container container-fluid'>
         <h3 class='title'>{{ $store.state.lang === 'en' ? 'Settings' : 'Paramètres' }}</h3>
         <h4 class='login'>{{ login }}</h4>
 

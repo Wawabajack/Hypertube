@@ -65,6 +65,7 @@ app.post('/movie', isUser, (req, res) => {
  *          ---> check if `movieMagnet` && `movieId` exists and are well-formated {{ utils::checkParams }}
  *          ---> download torrent {{ torrent::downloadTorrent }}
  *          ---> save torrent into database's movies collection {{ torrent::saveTorrent }}
+ *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
  *          ---> get subtitles {{ torrent::downloadSubtitles }}
  *          -----> error handling
  */
@@ -72,6 +73,7 @@ app.post('/download', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'movieMagnet', 'movieId' ])
         .then(torrent.downloadTorrent)
         .then(torrent.saveTorrent)
+        .then(torrent.saveDate)
         .then(torrent.downloadSubtitles)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
@@ -79,16 +81,16 @@ app.post('/download', isUser, (req, res) => {
 
 /**
  * Update the movie seen by the user into the dabatase
- *      ---> `data` : { `authenticatedToken`, `movieTitle`, `movieId`, `torrentPath` }
+ *      ---> `data` : { `authenticatedToken`, `movieTitle`, `movieId`, `movieMagnet` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> check if `movieId` && `movieTitle` && `torrentPath` exists and are well-formated {{ utils::checkParams }}
+ *          ---> check if `movieId` && `movieTitle` && `movieMagnet` exists and are well-formated {{ utils::checkParams }}
  *          ---> stream the movie {{ torrent::streaming }}
  *          ---> save movie into database's user collection {{ user::saveMovie }}
  *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
  *          -----> error handling
  */
 app.post('/watch', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieTitle', 'movieId' ])
+    utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'movieMagnet' ])
         .then(user.saveMovie)
         .then(torrent.saveDate)
         .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })

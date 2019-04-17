@@ -1,5 +1,5 @@
 <template>
-    <div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+    <div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)" class="container-fluid">
         <div v-if="getData">
             <div class='row movie-container'>
                 <div class='col-md-7 movie-background'>
@@ -45,7 +45,7 @@
                             <td class="seeds">{{ yts_torrent.seeds }}</td>
                             <td class="peers">{{ yts_torrent.peers }}</td>
                             <td class="dl" :class="'download-yts' + index"><i class="el-icon-download el-icon-right" @click="download(yts_torrent.hash, 'yts', index)"></i></td>
-                            <td class="dl" :class="'view-yts' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(yts_torrent)"></i></td>
+                            <td class="dl" :class="'view-yts' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(yts_torrent, 'yts')"></i></td>
                             <td class="dl" :class="'loading-yts' + index" style="display:none"><i class="el-icon-loading el-icon-right"></i></td>
                         </tr>
                     </table>
@@ -64,7 +64,7 @@
                             <td class="seeds">{{ rarbg_torrent.seeders }}</td>
                             <td class="peers">{{ rarbg_torrent.leechers }}</td>
                             <td class="dl" :class="'download-rarbg' + index"><i class="el-icon-download el-icon-right" @click="download(rarbg_torrent.download.split('magnet:?xt=urn:btih:')[1], 'rarbg', index)"></i></td>
-                            <td class="dl" :class="'view-rarbg' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(rarbg_torrent)"></i></td>
+                            <td class="dl" :class="'view-rarbg' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(rarbg_torrent, 'rarbg')"></i></td>
                             <td class="dl" :class="'loading-rarbg' + index" style="display:none"><i class="el-icon-loading el-icon-right"></i></td>
                         </tr>
                     </table>
@@ -182,7 +182,8 @@ export default {
             if (size / 1000000000 > 1) return (size / 1000000000).toFixed(2) + ' GB'
             else return (size / 100000000).toFixed(2) + ' MB'
         },
-        async watch(torrent) {
+        async watch(torrent, src) {
+            this.hash = src === 'yts' ? torrent.hash : torrent.download.split('magnet:?xt=urn:btih:')[1]
             var result = await this.$store.dispatch('watch', this)
             this.available = true
             this.streamFile = '/movies/' + torrent.torrentPath

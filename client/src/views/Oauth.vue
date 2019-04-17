@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="container-fluid">
         <p>Si vous n'êtes pas automatiquement redirigé, cliquez <router-link :to='url'>ici</router-link>.</p>
     </div>
 </template>

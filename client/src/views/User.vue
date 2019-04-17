@@ -1,5 +1,5 @@
 <template>
-    <div class='user-container'>
+    <div class='user-container container-fluid'>
         <div class="card offset-md-4 col-md-4">
             <div class="front">
                 <div class="cover">

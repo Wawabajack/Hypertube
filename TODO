@@ -52,10 +52,10 @@
         - add downloaded movie into hypertube's movies collection                                       @done
         - add viewed movie into hypertube's user collection                                             @done
         - update movie when watched into hypertube's movies collection                                  @done
-        - have to delete them if not watched in the past 30 days
+        - have to delete them if not watched in the past 30 days                                        @done
         - allow users to add message                                                                    @done
         - handle subtitles                                                                              @done
-            --> probleme d'accent // formatage utf-8                                                    @done               
+            --> probleme d'accent // formatage utf-8                                                    @done
         - if user's language doesn't match movie's language then default subtitles                      @done
 
 

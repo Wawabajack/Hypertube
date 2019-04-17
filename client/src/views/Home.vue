@@ -1,5 +1,5 @@
 <template>
-	<div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+	<div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)" class="container-fluid">
 		<div class="torrents-details">
 			<h5 class='title'>{{ $store.state.lang === 'en' ? 'Last RARBG\'s torrents' : 'Les derniers torrents RARBG' }}</h5>
 			<table>

@@ -1,0 +1,71 @@
+/nav:
+    _C  - language                                                                                      @done
+
+    _S  - update user's language                                                                        @done
+
+
+
+/footer:
+    _C  - all                                                                                           @done
+
+
+
+/settings:
+    _C  - all                                                                                           @done
+
+    _S  - all                                                                                           @done
+
+
+
+/user:
+    _C  - all                                                                                           @done
+
+    _S  - all                                                                                           @done
+
+
+
+/home:
+    _C  - display result                                                                                @done
+
+    _S  - get recommandeds torrents aka top torrents via rargb                                          @done
+            --> result = 25 last torrents, 25 top seeders torrents, 25 top leechers torrents            @done
+        - create link to imdb movie                                                                     @done
+
+
+
+/search:
+    _C  - display research & sort element (name, rate, category, productyear...)
+        - infinite pagination                                                                           @done
+        - movie's description has to contain prod year & rate if possible                               @done
+        - have to display when a user saw this movie                                                    @done
+
+    _S  - Allow our tmdb request to take all theses parameters
+        - Allow our results to be > 20                                                                  @done
+
+
+
+/movie:
+    _C  - display user's message                                                                        @done
+        - display the good icon : either el-icon-download or el-icon-view
+
+    _S  - deal with all videos format thanks to fluent-ffmpeg
+        - add downloaded movie into hypertube's movies collection                                       @done
+        - add viewed movie into hypertube's user collection                                             @done
+        - update movie when watched into hypertube's movies collection                                  @done
+        - have to delete them if not watched in the past 30 days
+        - allow users to add message                                                                    @done
+        - handle subtitles                                                                              @done
+            --> probleme d'accent // formatage utf-8                                                    @done               
+        - if user's language doesn't match movie's language then default subtitles                      @done
+
+
+
+
+BONUS (?)
+    - refonte visuelle 'input'
+    - oauth icons
+    - fixed navbar                                                                                      @done
+    - 1point per oauth strategy
+    - all subtitles
+    - refonte visuelle 'chat'
+    - reactive chat with socket io

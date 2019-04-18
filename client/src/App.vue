@@ -26,9 +26,9 @@
         },
     },
     async created() {
-      this.$store.state.session = this.$session.get('user');
-      this.$store.state.lang = this.$session.get('lang')
       if (localStorage.getItem('authenticatedToken')) {
+        this.$store.state.session = this.$session.get('user');
+        this.$store.state.lang = this.$session.get('lang')
         var result = await this.$store.dispatch('getLogin')
         if (result) if (result.data.success) this.$store.state.session = result.data.data.login
       }
@@ -47,3 +47,13 @@
     }
   }
 </script>
+
+<style>
+#app {
+    min-height: 100%;
+    position: relative;
+}
+.container-fluid {
+    padding-bottom: 116px;
+}
+</style>

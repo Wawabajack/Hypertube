@@ -3,6 +3,8 @@ const app = express.Router()
 const auth = require('../models/auth')
 const user = require('../models/user')
 const utils = require('../models/utils')
+const multer  = require('multer')
+const upload = multer({ dest: '../client/public/img/uploads/' })
 
 /**
  * Allow the user to register
@@ -19,10 +21,11 @@ const utils = require('../models/utils')
  *          ---> send a mail to validate account {{ utils::sendActivateAccountMail }}
  *          -----> error handling
  */
-app.post('/register', isGuest, (req, res) => {
+app.post('/register', isGuest, upload.single('file'), (req, res) => {
+    req.body.avatar = req.file
     utils.checkParams(req, res, [ 'login', 'password', 'passwordConfirmation', 'email', 'firstname', 'lastname', 'avatar' ])
-        .then(user.checkLogin)
         .then(user.checkEmail)
+        .then(user.checkLogin)
         .then(user.matchPassword)
         .then(utils.generateSalt)
         .then(utils.encryptPassword)

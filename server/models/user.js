@@ -204,7 +204,7 @@ module.exports.updateAvatar = (data) => {
         if (data.params.user) data.params.login = data.params.user
         var extension =  data.params.avatar.originalname.split('.').pop()
         var path = '../client/public/img/uploads/' + data.params.login + '.' + extension
-        fs.rename(data.params.avatar.path, path, (err) => { if (err) { console.log('NTGM'); reject({ res: data.res, en_error: err, fr_error: err }) }})
+        fs.rename(data.params.avatar.path, path, (err) => { if (err) reject({ res: data.res, en_error: err, fr_error: err }) })
         var newPath = '/img/uploads/' + data.params.login + '.' + extension
         mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { avatar: newPath }}, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })

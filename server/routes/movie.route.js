@@ -8,13 +8,13 @@ const user = require('../models/user')
  * Allow the user to get top torrents/movies ??
  *      ---> `data` : { `authenticatedToken` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> get top movies/torrents {{ torrent::getRecommandedMovies }}
+ *          ---> get top movies/torrents {{ torrent::getTopTorrents }}
  *          -----> if multiple sources check for duplicate movies ??
  *          -----> error handling
  */
 app.post('/', isUser, (req, res) => {
     utils.checkParams(req, res, [])
-        .then(torrent.getRecommandedMovies)
+        .then(torrent.getTopTorrents)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
@@ -27,10 +27,24 @@ app.post('/', isUser, (req, res) => {
  *          ---> get the movies {{ torrent::getSearchedMovies }}
  *          -----> error handling
  */
-// AJOUT DE PARAMS POUR TRIEE LA RECHERCHE
 app.post('/search', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'search', 'page', 'lang' ])
         .then(torrent.getSearchedMovies)
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+})
+
+/**
+ * Allow the user to discover movies
+ *      ---> `data` : { `authenticatedToken`, `with_genres`, `with_original_language`, `vote_average`, `release_date_min`, `release_date_max`, `page`, `lang` }
+ *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
+ *          ---> check if `with_genres` && `with_original_language` && `vote_average` && `release_date_min` && `release_date_max` && `page` && `lang` exists and are well-formated {{ utils::checkParams }}
+ *          ---> get the movies {{ torrent::getRecommandedMovies }}
+ *          -----> error handling
+ */
+app.post('/discover', isUser, (req, res) => {
+    utils.checkParams(req, res, [ 'with_genres', 'with_original_language', 'vote_average', 'release_date_min', 'release_date_max', 'page', 'lang' ])
+        .then(torrent.getRecommandedMovies)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
@@ -93,8 +107,8 @@ app.post('/watch', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'movieMagnet' ])
         .then(user.saveMovie)
         .then(torrent.saveDate)
-        .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })
-        .catch(data => { console.log('error'); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 module.exports = app

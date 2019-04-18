@@ -16,6 +16,7 @@
                         </div>
                     </div>
 					<router-link tag="i" :to="{ name: 'home'}"  class="icon el-icon-star-off" :class="{active: active === 'home' || active === null}"></router-link>
+					<router-link tag="i" :to="{ name: 'search'}"  class="icon el-icon-view" :class="{active: active === 'search'}"></router-link>
 					<router-link tag="i" :to="{ name: 'account'}" class="icon el-icon-setting" :class="{active: active === 'account'}"></router-link>
 					<router-link tag="i" :to="{ name: 'disconnect'}" class="icon el-icon-close"></router-link>
                     <img v-if="$store.state.lang === 'en'" src="/img/france-flag-round-icon-16.png" alt="fr" @click="changeLang('fr')">
@@ -50,11 +51,11 @@
                 if (this.active === 'search' && to.query && to.query.q) {
                     this.$store.state.search = to.query.q
                     this.search = to.query.q
-                } else this.search = ''
+                }
 			},
 			'search' (n, o) {
                 this.$store.state.search = this.search
-                if (this.search) this.$router.push({name: 'search', query: { q: this.search }})
+                this.search ? this.$router.push({name: 'search', query: { q: this.search }}) : this.$router.push({name: 'search' })
 			},
 		},
 		methods: {

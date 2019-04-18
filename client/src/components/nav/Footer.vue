@@ -1,7 +1,7 @@
 <template>
-    <div>
-        <footer>Copyright © 2019 <span class="title">Hypertube</span> - <span class="name">tbroggi</span></footer>
-    </div>
+    <footer>
+        <div>Copyright © 2019 <span class="title">Hypertube</span> - <span class="name">tbroggi</span></div>
+    </footer>
 </template>
 
 <script>
@@ -12,12 +12,14 @@ export default {
 
 <style scoped>
 footer {
-    margin-top: 60px;
     text-align: center;
     border-top: 1px solid lightcoral;
     color: lightcoral;
     padding: 20px;
     font-size: small;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
 }
 footer .name {
     font-style: italic;

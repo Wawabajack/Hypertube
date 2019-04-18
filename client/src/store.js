@@ -65,9 +65,18 @@ const actions = {
     })
   },
   register: (store, user) => {
+    let formData = new FormData()
+    formData.append('file', user.avatar)
+    formData.append('login', user.login)
+    formData.append('password', user.password)
+    formData.append('passwordConfirmation', user.passwordConfirmation)
+    formData.append('email', user.email)
+    formData.append('firstname', user.firstname)
+    formData.append('lastname', user.lastname)
+    formData.append('authenticatedToken', localStorage.getItem('authenticatedToken'))
     let uri = `http://${ip}/auth/register`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { login: user.login, password: user.password, passwordConfirmation: user.passwordConfirmation, email: user.email, firstname: user.firstname, lastname: user.lastname, avatar: user.avatar, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, formData, { headers: { 'Content-Type' : 'multipart/form-data' }})
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })
@@ -109,6 +118,14 @@ const actions = {
     let uri = `http://${ip}/torrent/search`
     return new Promise((fullfil, reject) => {
       axios.post(uri, { search: store.state.search, page: vue.page, lang: store.state.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
+        .then(result => { fullfil(result) })
+        .catch(err => { console.log(err); reject({ error: err })})
+    })
+  },
+  discover: (store, vue) => {
+    let uri = `http://${ip}/torrent/discover`
+    return new Promise((fullfil, reject) => {
+      axios.post(uri, { with_genres: vue.genre, with_original_language: vue.language, vote_average: vue.disc_vote_average, release_date_min: vue.disc_release_date_min, release_date_max: vue.disc_release_date_max, page: vue.page, lang: store.state.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })
@@ -209,6 +226,7 @@ const actions = {
     let formData = new FormData()
     formData.append('file', avatar)
     formData.append('user', store.state.session)
+    formData.append('authenticatedToken', localStorage.getItem('authenticatedToken'))
     return new Promise((fullfil, reject) => {
       axios.post(uri, formData, { headers: { 'Content-Type' : 'multipart/form-data' }})
         .then(result => { fullfil(result) })
@@ -236,7 +254,7 @@ const actions = {
   sendMessage: (store, vue) => {
     let uri = `http://${ip}/msg/send`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { message: vue.input, movieId: vue.movie.imdbid, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { message: vue.input, movieId: vue.movie.imdbID, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })

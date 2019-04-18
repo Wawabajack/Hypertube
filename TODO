@@ -34,12 +34,12 @@
 
 
 /search:
-    _C  - display research & sort element (name, rate, category, productyear...)
+    _C  - display research & sort element (name, rate, category, productyear...)                        @done
         - infinite pagination                                                                           @done
         - movie's description has to contain prod year & rate if possible                               @done
         - have to display when a user saw this movie                                                    @done
 
-    _S  - Allow our tmdb request to take all theses parameters
+    _S  - Allow our tmdb request to take all theses parameters                                          @done
         - Allow our results to be > 20                                                                  @done
 
 
@@ -62,10 +62,19 @@
 
 
 BONUS (?)
-    - refonte visuelle 'input'
-    - oauth icons
+    - refonte visuelle input img `register`, `account`
+    - oauth icons `register`
     - fixed navbar                                                                                      @done
     - 1point per oauth strategy
-    - all subtitles
-    - refonte visuelle 'chat'
-    - reactive chat with socket io
+    - all subtitles 
+    - refonte visuelle chatbox `movies`
+    - reactive chat with socket io `movies`
+    - beautiful img for `registration`/`login`
+
+
+
+BUGS >>
+    - input `register` ---> impossible to register bc im sending 'blob adress' so it didnt go through Utils.checkParams
+    - { error: 'Cant find imdb in database. Are you sure this imdb exists?',
+        error_code: 10 } on some movies
+    - a lot of movies not found

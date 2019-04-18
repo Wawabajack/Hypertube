@@ -40,15 +40,7 @@
             </div>
 			<div class='register-box-avatar'>
 				<p>Avatar</p>
-				<el-upload
-				class="avatar-uploader"
-				action="https://jsonplaceholder.typicode.com/posts/"
-				:show-file-list="false"
-				:on-success="handleAvatarSuccess"
-				:before-upload="beforeAvatarUpload">
-					<img v-if="registerForm.avatar" :src="registerForm.avatar" class="avatar">
-					<i v-else class="el-icon-plus avatar-uploader-icon"></i>
-				</el-upload>
+				<input type="file" id="file" ref="file"/>
 			</div>
 		<button class='button' @click='submitForm'>Registration</button>
 	</div>
@@ -74,14 +66,13 @@ export default {
 	},
 	methods: {
 		async submitForm() {
+      this.registerForm.avatar = this.$refs.file.files[0]
       var result = await this.$store.dispatch('register', this.registerForm)
-      console.log(result)
 			if (result) {
 				if (result.data.success) {
 					this.notify('Registration successful', 'An confirmation email has been send to you', 'success')
 					this.$router.push({ name: 'login' })
-				} else
-					this.notify('Error!', result.data.en_error, 'error')
+				} else this.notify('Error!', result.data.en_error, 'error')
 			}
 		},
 		notify(title, message, type) {
@@ -90,21 +81,7 @@ export default {
 				message: message,
 				type: type
 			})
-		},
-		handleAvatarSuccess(res, file) {
-      this.registerForm.avatar = URL.createObjectURL(file.raw);
-    },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === 'image/jpeg';
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isJPG) {
-        this.$message.error('L\'avatar doit être en JPG !');
-      }
-      if (!isLt2M) {
-        this.$message.error('L\'avatar ne peut pas excéder 2Mb !');
-      }
-      return isJPG && isLt2M;
-    }
+		}
   }
 }
 </script>

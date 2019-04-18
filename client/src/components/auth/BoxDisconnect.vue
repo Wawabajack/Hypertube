@@ -20,7 +20,7 @@
 
 <style scoped>
 #BoxDisconnect {
-	margin-top: 50vh;
+	padding-top: 50vh;
 	transform: translateY(-50%);
 }
 </style>

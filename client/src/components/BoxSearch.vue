@@ -21,6 +21,12 @@ export default {
       watched: false
     }
 	},
+	watch: {
+		'movie' (n) {
+			this.watched = false
+			if (this.userMovies) if (this.userMovies.indexOf(this.movie.title) >= 0) this.watched = true
+		}
+	},
 	created() {
 		if (this.userMovies) if (this.userMovies.indexOf(this.movie.title) >= 0) this.watched = true
 	}

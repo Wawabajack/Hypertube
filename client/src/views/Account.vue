@@ -1,42 +1,42 @@
 <template>
-    <div class='account-container container-fluid'>
-        <h3 class='title'>{{ $store.state.lang === 'en' ? 'Settings' : 'Paramètres' }}</h3>
-        <h4 class='login'>{{ login }}</h4>
-
-        <div class='group'>      
-            <input type='text' v-model='lastname' required @blur='updateLastname()'>
-            <span class='highlight'></span>
-            <span class='bar'></span>
-            <label>{{ $store.state.lang === 'en' ? 'Lastname' : 'Nom' }}</label>
+    <div class="container-fluid">
+        <div class="row account-container">
+            <h3 class="title">{{ $store.state.lang === "en" ? "Settings" : "Paramètres" }}</h3>
+            <h4 class="login">{{ login }}</h4>
+            <div class="group">      
+                <input type="text" v-model="lastname" required @blur="updateLastname()">
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>{{ $store.state.lang === "en" ? "Lastname" : "Nom" }}</label>
+            </div>
+            <div class="group">      
+                <input type="text" v-model="firstname" required @blur="updateFirstname()">
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>{{ $store.state.lang === "en" ? "Firstname" : "Prénom" }}</label>
+            </div>
+            <div class="group" v-if="email">      
+                <input type="email" v-model="email" required v-if="oldpassword" @blur="updateEmail()">
+                <input type="email" disabled v-model="email" required v-else>
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>Email</label>
+            </div>
+            <div class="group" v-if="oldpassword">      
+                <input type="password" v-model="password" required>
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>{{ $store.state.lang === "en" ? "Password" : "Mot de passe" }}</label>
+            </div>
+            <div class="group" v-if="oldpassword">      
+                <input type="password" v-model="passwordConfirmation" required @blur="updatePassword()">
+                <span class="highlight"></span>
+                <span class="bar"></span>
+                <label>{{ $store.state.lang === "en" ? "Password confirmation" : "Confirmation du mot de passe" }}</label>
+            </div>
+            <input type="file" id="file" ref="file"/>
+            <el-button type="primary" @click="updateAvatar()">Submit</el-button>
         </div>
-        <div class='group'>      
-            <input type='text' v-model='firstname' required @blur='updateFirstname()'>
-            <span class='highlight'></span>
-            <span class='bar'></span>
-            <label>{{ $store.state.lang === 'en' ? 'Firstname' : 'Prénom' }}</label>
-        </div>
-        <div class='group' v-if='email'>      
-            <input type='email' v-model='email' required v-if='oldpassword' @blur='updateEmail()'>
-            <input type='email' disabled v-model='email' required v-else>
-            <span class='highlight'></span>
-            <span class='bar'></span>
-            <label>Email</label>
-        </div>
-        <div class='group' v-if='oldpassword'>      
-            <input type='password' v-model='password' required>
-            <span class='highlight'></span>
-            <span class='bar'></span>
-            <label>{{ $store.state.lang === 'en' ? 'Password' : 'Mot de passe' }}</label>
-        </div>
-        <div class='group' v-if='oldpassword'>      
-            <input type='password' v-model='passwordConfirmation' required @blur='updatePassword()'>
-            <span class='highlight'></span>
-            <span class='bar'></span>
-            <label>{{ $store.state.lang === 'en' ? 'Password confirmation' : 'Confirmation du mot de passe' }}</label>
-        </div>
-
-        <input type="file" id="file" ref="file"/>
-		<el-button type="primary" @click="updateAvatar()">Submit</el-button>
     </div>
 </template>
 
@@ -104,12 +104,13 @@ export default {
 
 <style scoped>
 .account-container {
-    margin-top: 58px;
     color: white;
-    font-family:'Roboto';
-    width:600px; 
-    display:block;
-    padding:10px 50px 50px;
+    font-family: 'Roboto';
+    width: 600px;
+    display: block;
+    padding: 116px 50px 50px;
+    margin: 0 auto;
+    text-align: center;
 }
 h3.title {
     text-align: center;

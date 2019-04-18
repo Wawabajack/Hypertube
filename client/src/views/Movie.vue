@@ -1,7 +1,7 @@
 <template>
-    <div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)" class="container-fluid">
-        <div v-if="getData">
-            <div class='row movie-container'>
+    <div class="container-fluid">
+        <div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+            <div class='row movie-container' v-if="getData">
                 <div class='col-md-7 movie-background'>
                     <div class='movie-foreground'>
                         <iframe :src='trailer' frameborder='0' allowfullscreen></iframe>
@@ -11,23 +11,24 @@
                     <div class="row">
                         <div class='col-lg-5'>
                             <ul>
-                                <li class="title year">{{ movie.title }} <span>({{ movie.year }})</span></li>
-                                <li class="rating"><i class="icon el-icon-star-on"></i>  {{ movie.rating }} <span>/10</span></li>
-                                <li class="runtime genres boxoffice">{{ movie.runtime }} | {{ movie.genres }} | {{ movie.boxoffice }}</li>
-                                <li class="plot">{{ movie.plot }}</li>
-                                <li class="director"><span>{{ $store.state.lang === 'en' ? 'Director' : 'Réalisateur' }}</span>: {{ movie.director }}</li>
-                                <li class="writer"><span>{{ $store.state.lang === 'en' ? 'Writers' : 'Scénariste' }}</span>: {{ movie.writer }}</li>
-                                <li class="actors"><span>Casting</span>: {{ movie.actors }}</li>
-                                <li class="awards">{{ movie.awards }}</li>
+                                <li class="title year">{{ movie.Title }} <span>({{ movie.Year }})</span></li>
+                                <li class="production">({{ movie.Production }})</li>
+                                <li class="rating"><i class="icon el-icon-star-on"></i>  {{ movie.imdbRating }} <span>/10</span></li>
+                                <li class="runtime genres boxoffice">{{ movie.Runtime }} | {{ movie.Genre }} | {{ movie.BoxOffice }}</li>
+                                <li class="plot">{{ movie.Plot }}</li>
+                                <li class="director"><span>{{ $store.state.lang === 'en' ? 'Director' : 'Réalisateur' }}</span>: {{ movie.Director }}</li>
+                                <li class="writer"><span>{{ $store.state.lang === 'en' ? 'Writers' : 'Scénariste' }}</span>: {{ movie.Writer }}</li>
+                                <li class="actors"><span>Casting</span>: {{ movie.Actors }}</li>
+                                <li class="awards">{{ movie.Awards }}</li>
                             </ul>
                         </div>
                         <div class='col-lg-7'>
-                            <img :src='movie.poster' :alt='movie.name'>
+                            <img :src='movie.Poster' :alt='movie.Title'>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row torrent-container">
+            <div class="row torrent-container" v-if="getData">
                 <div class='col-md-5 torrents-details'>
                     <h5>Torrents</h5>
                     <h5 class='yts-title'>Yts.am</h5>
@@ -81,26 +82,22 @@
                     </div>
                 </div>
             </div>
-            <div class="row chat-container">
+            <div class="row chat-container" v-if="getData">
                 <div class="offset-md-3 col-md-6 chat-background">
-                    <ul class="ul-chat">
-                        <li v-for="(message, index) in messages" :key="`message-${index}`" class="chats">
-                            <div :class="getClass(index, message.exp)">
-                                <router-link tag="a" :to="{ path: `/user?name=${message.exp}`}">{{ message.exp }}</router-link>
-                                <span>{{ message.msg }}</span>
-                            </div>
-                        </li>
-                    </ul>
+                    <transition-group name="list" tag="div" id="chat-group" class="chat-group">
+                        <p v-for="(message, index) in messages" :key="message.id + '-' + index" :class="message.exp === $store.state.session ? 'me' : 'notme'">
+                            {{ message.msg }}
+                            <span>{{ message.exp }}</span>
+                        </p>
+                    </transition-group>
                     <div class="chat-send">
-                        <form class="form">
-                            <input type="search" v-model="input" :placeholder="$store.state.lang === 'en' ? 'Send a message...' : 'Ecrire un message...'"/>
-                            <button type="button" class="btn btn--primary btn--inside uppercase" @click="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-                        </form>
+                        <input type="search" v-model="input" :placeholder="$store.state.lang === 'en' ? 'Send a message...' : 'Ecrire un message...'" @keypress.enter="sendMessage()">
+                        <i class="fas fa-paper-plane" @click="sendMessage()"></i>
                     </div>
                 </div>
             </div>
+            <div class="error" v-else><span>{{ err }}</span></div>
         </div>
-        <div class="error" v-else><span>{{ err }}</span></div>
     </div>
 </template>
 
@@ -132,33 +129,38 @@ export default {
     },
     watch: {
         '$store.state.lang' (o, n) {
-            translate(this.movie.plot, { from: n, to: o }).then(res => { this.movie.plot = res })
-            translate(this.movie.awards, { from: n, to: o }).then(res => { this.movie.awards = res })
+            translate(this.movie.Plot, { from: n, to: o }).then(res => { this.movie.Plot = res })
+            translate(this.movie.Awards, { from: n, to: o }).then(res => { this.movie.Awards = res })
         }
     },
     async beforeCreate() {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
         else {
             if (this.$route.query.id) this.id = this.$route.query.id
-            else this.title = this.$route.query.name
+            else if (this.$route.query.name) this.title = this.$route.query.name
+            else this.$router.push({ name: 'home' })
             var result = await this.$store.dispatch('movie', this)
             if (result) {
+                this.loading = false
                 if (result.data.success) {
-                    this.loading = false
                     this.movie = result.data.data.movie
-                    if (this.$store.state.lang === 'fr') translate(result.data.data.movie.plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.plot = res })
-                    if (this.$store.state.lang === 'fr') translate(result.data.data.movie.awards, { from: 'en', to: 'fr' }).then(res => { this.movie.awards = res })
+                    if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
+                    if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
                     this.trailer = result.data.data.trailer
                     this.yts_torrents = result.data.data.yts_torrents
                     this.rarbg_torrents = result.data.data.rarbg_torrents
                     this.torrents = result.data.data.torrents
                     this.getData = true
-                    var result2 = await this.$store.dispatch('getMessages', this.movie.imdbid)
+                    var result2 = await this.$store.dispatch('getMessages', this.movie.imdbID)
                     if (result2) if (result2.data.success) this.messages = result2.data.data.messages
-                } else this.err = result.data.error
+                } else this.err = result.data.en_error
             }
         }
     },
+	updated() {
+		var element = document.getElementById('chat-group');
+		element.scrollTop = element.scrollHeight;
+	},
     methods: {
         async download(hash, src, index) {
             this.hash = hash
@@ -192,7 +194,7 @@ export default {
             var result = await this.$store.dispatch('sendMessage', this)
             if (result) if (!result.data.success) this.$store.state.lang === 'en' ? this.notify('Error!', result.data.en_error, 'error') : this.notify('Erreur!', result.data.fr_error, 'error')
             this.input = ''
-            var result2 = await this.$store.dispatch('getMessages', this.movie.imdbid)
+            var result2 = await this.$store.dispatch('getMessages', this.movie.imdbID)
             if (result2) if (result2.data.success) this.messages = result2.data.data.messages
         },
         notify(title, message, type) {
@@ -201,12 +203,6 @@ export default {
 				message: message,
 				type: type
 			})
-        },
-        getClass(index, login) {
-            var classs = ''
-            classs += !(index % 2) ? 'pair ' : 'impair '
-            classs += login === this.$store.state.session ? 'me' : 'notme'
-            return classs
         }
     }
 }
@@ -317,26 +313,6 @@ ul {
 video {
     outline: 0;
 }
-.row.chat-container {
-    padding-top: 65px;
-    height: 30rem;
-    margin: auto;
-}
-.chat-background {
-    border: 1px solid #bebebe;
-    padding: 0;
-    position: relative;
-    display: table;
-    float: left;
-    width: 20rem;
-    height: 25rem;
-    overflow: hidden;
-}
-.chat-send {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-}
 .btn {
     display: inline-block;
     background: transparent;
@@ -366,7 +342,7 @@ video {
 .btn--inside {
     margin-left: -100px;
 }
-form input {
+.inner-chat input {
     width: 100%;
     background: #141414;
     color: white;
@@ -384,32 +360,105 @@ form input {
 .row {
     margin-right: 0
 }
-.chats > div {
-    display: grid;
+.chat-background {
+    overflow: inherit;
+    height: 50vh;
+    width: 100%;
+    margin-top: 116px;
 }
-.chat-background ul {
-    overflow: scroll;
-    height: 22.5rem;
-    padding-inline-start: 0
+.chat-background > .chat-send {
+    margin: 20px 0;
+    width: 100%;
+    padding: 0px 30px;
+    border-radius: 8px;
+    background-color: #141414;
+    color:lightcoral;
+    border-bottom: 1px solid lightcoral;
+    border-left: 1px solid lightcoral;
 }
-.chats a {
-    color: #bebebe;
-    text-decoration: none;
-    font-size: small;
-    padding: 5px 5px 0 5px;
+.chat-background > .chat-send > i {
+    color: lightcoral;
 }
-.chats span {
+.chat-send > input {
+    border: none;
+    height: 50px;
+    width: 80%;
     color: white;
-    font-size: medium;
-    padding: 5px 30px 0 30px;
+    background: none;
 }
-.pair {
-    background: rgba(128, 128, 128, 0.05);
+.chat-send > input::-webkit-input-placeholder {
+    color: white;
 }
-.me {
-    text-align: right;
+.chat-send > input:-ms-input-placeholder {
+    color: white;
 }
-.notme {
-    text-align: left;
+.chat-send > input::-ms-input-placeholder {
+    color: white;
+}
+.chat-send > input::placeholder {
+    color: white;
+}
+.chat-send > input:focus {
+    outline: none;
+}
+.chat-send > .fas {
+    margin-top: 15px;
+    float: right;
+    color: #bebebe;
+    font-size: 22px;
+}
+.chat-group {
+    height: 40vh;
+    overflow-y: scroll;
+    padding-right: 15px;
+    font-size: 14px;
+    padding-top: 15px;
+}
+.chat-group > .notme {
+    background: #f8f8f8;
+    width: auto;
+    max-width: 250px;
+    padding: 5px 20px;
+    border-radius: 30px;
+    color: #454545;
+    clear: both;
+    float: left;
+}
+.chat-group > .me {
+    background-color: lightcoral;
+    display: block;
+    width: auto;
+    max-width: 600px;
+    padding: 5px 20px;
+    border-radius: 30px;
+    color: white;
+    clear: both;
+    float: right;
+}
+::-webkit-scrollbar {
+    width: 12px;
+}
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: rgba(240,128,128,0.4); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+.me span {
+    position: relative;
+    font-size: x-small;
+    top: -25px;
+    left: 10px;
+}
+p.notme span {
+    position: relative;
+    font-size: x-small;
+    top: -25px;
+    color:white
 }
 </style>

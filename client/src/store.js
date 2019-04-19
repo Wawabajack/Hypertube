@@ -113,7 +113,14 @@ const actions = {
   },
 
 
-
+  recommanded: (store, vue) => {
+    let uri = `http://${ip}/torrent/`
+    return new Promise((fullfil, reject) => {
+      axios.post(uri, { authenticatedToken: localStorage.getItem('authenticatedToken') })
+        .then(result => { fullfil(result) })
+        .catch(err => { console.log(err); reject({ error: err })})
+    })
+  },
   search: (store, vue) => {
     let uri = `http://${ip}/torrent/search`
     return new Promise((fullfil, reject) => {
@@ -141,23 +148,23 @@ const actions = {
   download: (store, vue) => {
     let uri = `http://${ip}/torrent/download`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieMagnet: vue.hash, movieId: vue.movie.imdbid, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { movieMagnet: vue.hash, movieId: vue.movie.imdbID, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })
   },
-  watch: (store, vue) => {
+  update: (store, vue) => {
+    let uri = `http://${ip}/torrent/update`
+    return new Promise((fullfil, reject) => {
+      axios.post(uri, { movieTitle: vue.movie.Title, movieId: vue.movie.imdbID, movieMagnet: vue.hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
+        .then(result => { fullfil(result) })
+        .catch(err => { console.log(err); reject({ error: err })})
+    })
+  },
+  watch: (store, streamFile) => {
     let uri = `http://${ip}/torrent/watch`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieTitle: vue.movie.title, movieId: vue.movie.imdbid, movieMagnet: vue.hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
-        .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
-    })
-  },
-  recommanded: (store, vue) => {
-    let uri = `http://${ip}/torrent/`
-    return new Promise((fullfil, reject) => {
-      axios.post(uri, { authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { streamFile: streamFile, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })

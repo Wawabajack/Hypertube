@@ -52,7 +52,7 @@ module.exports.getSearchedMovies = (data) => {
 module.exports.getRecommandedMovies = (data) => {
     return new Promise((fullfil, reject) => {
         var lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
-        var url = 'https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&sort_by=vote_average.desc&include_adult=false&include_video=false&page=' + data.params.page + '&release_date.gte=' + data.params.release_date_min + '&release_date.lte=' + data.params.release_date_max + '&vote_average.gte=' + data.params.vote_average[0] + '&vote_average.lte=' + data.params.vote_average[1] + '&with_original_language=' + data.params.with_original_language
+        var url = 'https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&sort_by=vote_average.desc&include_adult=false&include_video=false&page=' + data.params.page + '&release_date.gte=' + data.params.release_date_min + '-01-01&release_date.lte=' + data.params.release_date_max + '-12-31&vote_average.gte=' + data.params.vote_average[0] + '&vote_average.lte=' + data.params.vote_average[1]
         url += data.params.with_genres === '-1' ? '' : '&with_genres=' + data.params.with_genres
         request.get({
             url: url,
@@ -84,10 +84,10 @@ module.exports.getMovie = (data) => {
 
 module.exports.getDownloadedTorrents = (data) => {
     return new Promise((fullfil, reject) => {
-        mongodb.collection('movies').findOne({ id: data.params.movie.imdbID }, (err, result) => {
+        mongodb.collection('movies').find({ id: data.params.movie.imdbID }).toArray((err, results) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else if (result) data.params.torrents = result.downloadedTorrents
-            fullfil(data)
+            else if (results) { data.params.torrents = results; fullfil(data) }
+            else fullfil(data)
         })
     })
 }
@@ -140,7 +140,8 @@ module.exports.downloadTorrent = (data) => {
         engine.on('ready', () => {
             console.log('ready to download')
             engine.files.forEach(file => {
-                if (file.name.search('mp4') >= 0 || file.name.search('webm') >= 0) {
+                console.log(file.name)
+                if (file.name.search('mp4') >= 0 || file.name.search('webm') >= 0 || file.name.search('mkv') >= 0) {
                     var stream = file.createReadStream();
                     data.params.torrentPath = file.path
                     data.params.torrentFilename = file.name
@@ -188,32 +189,34 @@ module.exports.downloadSubtitles = (data) => {
                 var language = [ 'fr', 'en' ]
                 var items = 0 
                 language.forEach(lang => {
-                    request.get({
-                        url: results[lang].utf8
-                    }, (error, response, body) => {
-                        if (error) reject({ res: data.res, en_error: error, fr_error: error })
-                        else {
-                            var path = data.params.torrentPath.split('/')[0]
-                            var name = data.params.torrentFilename.split('.')
-                            name.pop()
-                            var tmp = path + '/' + name.join('.') + '-' + lang
-                            var path1 = '../client/public/movies/' + tmp + '.srt'
-                            var path2 = '../client/public/movies/' + tmp + '.vtt'
-                            fs.writeFile(path1, body, "utf-8", (err) => {
-                                if (err) reject({ res: data.res, en_error: err, fr_error: err })
-                                else {
-                                    fs.createReadStream(path1)
-                                        .pipe(srt2vtt())
-                                        .pipe(fs.createWriteStream(path2))
-                                    data.params.subtitles.push({ lang: lang, name: '/movies/' + tmp + '.vtt' })
-                                    if (++items === language.length) fullfil(data)
-                                } 
-                            })
-                        }
-                    })
+                    if (results[lang]) {
+                        request.get({
+                            url: results[lang].utf8
+                        }, (error, response, body) => {
+                            if (error) reject({ res: data.res, en_error: error, fr_error: error })
+                            else {
+                                var path = data.params.torrentPath.split('/')[0]
+                                var name = data.params.torrentFilename.split('.')
+                                name.pop()
+                                var tmp = path + '/' + name.join('.') + '-' + lang
+                                var path1 = '../client/public/movies/' + tmp + '.srt'
+                                var path2 = '../client/public/movies/' + tmp + '.vtt'
+                                fs.writeFile(path1, body, "utf-8", (err) => {
+                                    if (err) reject({ res: data.res, en_error: err, fr_error: err })
+                                    else {
+                                        fs.createReadStream(path1)
+                                            .pipe(srt2vtt())
+                                            .pipe(fs.createWriteStream(path2))
+                                        data.params.subtitles.push({ lang: lang, name: '/movies/' + tmp + '.vtt' })
+                                        if (++items === language.length) fullfil(data)
+                                    } 
+                                })
+                            }
+                        })
+                    } else if (++items === language.length) fullfil(data)
                 })
             })
-            .catch(error => { reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
+            .catch(error => { console.log(error); reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
     })
 }
 

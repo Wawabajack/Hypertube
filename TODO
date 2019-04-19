@@ -46,35 +46,55 @@
 
 /movie:
     _C  - display user's message                                                                        @done
-        - display the good icon : either el-icon-download or el-icon-view
+        - display the good icon : either el-icon-download or el-icon-view                               @done
 
-    _S  - deal with all videos format thanks to fluent-ffmpeg
-        - add downloaded movie into hypertube's movies collection                                       @done
+    _S  - add downloaded movie into hypertube's movies collection                                       @done
         - add viewed movie into hypertube's user collection                                             @done
         - update movie when watched into hypertube's movies collection                                  @done
         - have to delete them if not watched in the past 30 days                                        @done
         - allow users to add message                                                                    @done
+
+
+
+/watch:
+    -C  - css
+
+    -S  - streaming mp4 && webm without issue                                                           
+        - deal with all videos format thanks to fluent-ffmpeg
+        - allow user to click on 'download' features                                                    @done
         - handle subtitles                                                                              @done
             --> probleme d'accent // formatage utf-8                                                    @done
         - if user's language doesn't match movie's language then default subtitles                      @done
 
 
-
-
 BONUS (?)
     - refonte visuelle input img `register`, `account`
     - oauth icons `register`
-    - fixed navbar                                                                                      @done
     - 1point per oauth strategy
-    - all subtitles 
-    - refonte visuelle chatbox `movies`
+    - all subtitles
     - reactive chat with socket io `movies`
     - beautiful img for `registration`/`login`
 
 
 
 BUGS >>
-    - input `register` ---> impossible to register bc im sending 'blob adress' so it didnt go through Utils.checkParams
+    - search by name but multiples movies got the same
+        --> issues with seen movies
+        --> wrong `movie` page
+            ====> faire une recherche imdb sur chaque résultat au lieu de le faire + tard
+
+    - error 206 partial content when streaming movie                                                    @done
+    - video not loading if its downloaded for the 1st time and no reloading                             @done
+
+
     - { error: 'Cant find imdb in database. Are you sure this imdb exists?',
         error_code: 10 } on some movies
     - a lot of movies not found
+
+
+    - input `register` ---> impossible to register bc im sending 'blob adress'                          @done
+        so it didnt go through Utils.checkParams                                                        @done
+
+
+    - plugin traduction ---> warning client side
+            ====> check allociné api

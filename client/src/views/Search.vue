@@ -43,11 +43,6 @@
                     <el-radio-button label="10752">{{ $store.state.lang === 'en' ? 'War' : 'Guerre' }}</el-radio-button>
                     <el-radio-button label="37">Western</el-radio-button>
                 </el-radio-group>
-                <p>{{ $store.state.lang === 'en' ? 'Language' : 'Langue' }}</p>
-                <el-radio-group v-model="language" size="mini" :disabled="isSearch">
-                    <el-radio-button label="en">{{ $store.state.lang === 'en' ? 'English' : 'Anglais' }}</el-radio-button>
-                    <el-radio-button label="fr">{{ $store.state.lang === 'en' ? 'French' : 'Français' }}</el-radio-button>
-                </el-radio-group>
                 <p>{{ $store.state.lang === 'en' ? 'Popularity' : 'Popularité' }}</p>
                 <el-slider
                 v-model="disc_vote_average"

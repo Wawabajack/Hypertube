@@ -4,7 +4,8 @@
             <div class='row movie-container' v-if="getData">
                 <div class='col-md-7 movie-background'>
                     <div class='movie-foreground'>
-                        <iframe :src='trailer' frameborder='0' allowfullscreen></iframe>
+                        <iframe :src='trailer' frameborder='0' allowfullscreen v-if="trailer"></iframe>
+                        <p class="trailer_err" v-else>{{ $store.state.lang === 'en' ? 'No trailer available..' : 'Pas de trailer disponible..' }}</p>
                     </div>
                 </div>
                 <div class='col-md-5 movie-details'>
@@ -29,7 +30,7 @@
                 </div>
             </div>
             <div class="row torrent-container" v-if="getData">
-                <div class='col-md-5 torrents-details'>
+                <div class='offset-md-1 col-md-5 torrents-details'>
                     <h5>Torrents</h5>
                     <h5 class='yts-title'>Yts.am</h5>
                     <table>
@@ -45,8 +46,9 @@
                             <td class="size">{{ yts_torrent.size }}</td>
                             <td class="seeds">{{ yts_torrent.seeds }}</td>
                             <td class="peers">{{ yts_torrent.peers }}</td>
-                            <td class="dl" :class="'download-yts' + index"><i class="el-icon-download el-icon-right" @click="download(yts_torrent.hash, 'yts', index)"></i></td>
-                            <td class="dl" :class="'view-yts' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(yts_torrent, 'yts')"></i></td>
+                            <td v-if="torrents.find(torrent => torrent.magnet === yts_torrent.hash)" class="dl" :class="'view-yts' + index"><i class="el-icon-view el-icon-right" @click="update(yts_torrent, 'yts', torrents.find(torrent => torrent.magnet === yts_torrent.hash).path, torrents.find(torrent => torrent.magnet === yts_torrent.hash).file)"></i></td>
+                            <td v-else class="dl" :class="'download-yts' + index"><i class="el-icon-download el-icon-right" @click="download(yts_torrent.hash, 'yts', index)"></i></td>
+                            <td class="dl" :class="'view-yts' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="update(yts_torrent, 'yts', null, null)"></i></td>
                             <td class="dl" :class="'loading-yts' + index" style="display:none"><i class="el-icon-loading el-icon-right"></i></td>
                         </tr>
                     </table>
@@ -65,29 +67,16 @@
                             <td class="seeds">{{ rarbg_torrent.seeders }}</td>
                             <td class="peers">{{ rarbg_torrent.leechers }}</td>
                             <td class="dl" :class="'download-rarbg' + index"><i class="el-icon-download el-icon-right" @click="download(rarbg_torrent.download.split('magnet:?xt=urn:btih:')[1], 'rarbg', index)"></i></td>
-                            <td class="dl" :class="'view-rarbg' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(rarbg_torrent, 'rarbg')"></i></td>
+                            <td class="dl" :class="'view-rarbg' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="update(rarbg_torrent, 'rarbg')"></i></td>
                             <td class="dl" :class="'loading-rarbg' + index" style="display:none"><i class="el-icon-loading el-icon-right"></i></td>
                         </tr>
                     </table>
                 </div>
-                <div class='col-md-7 torrent-background'>
-                    <div class='torrent-foreground'>
-                        <video v-if="available" controls autoplay="true">
-                            <source :src="streamFile" type="video/mp4"/>
-                            <track v-if="$store.state.lang === 'fr' && movie.languages === 'English'" label="French" kind="subtitles" srclang="fr" :src="subtitles.fr" default>
-                            <track v-else label="French" kind="subtitles" srclang="fr" :src="subtitles.fr">
-                            <track v-if="$store.state.lang === 'en' && movie.languages !== 'English'" label="English" kind="subtitles" srclang="en" :src="subtitles.en" default>
-                            <track v-else label="English" kind="subtitles" srclang="en" :src="subtitles.en">
-                        </video>
-                    </div>
-                </div>
-            </div>
-            <div class="row chat-container" v-if="getData">
-                <div class="offset-md-3 col-md-6 chat-background">
+                <div class="col-md-5 chat-background">
                     <transition-group name="list" tag="div" id="chat-group" class="chat-group">
                         <p v-for="(message, index) in messages" :key="message.id + '-' + index" :class="message.exp === $store.state.session ? 'me' : 'notme'">
+                            <a :href="`/user?name=${message.exp}`"><span>{{ message.exp }}</span></a>
                             {{ message.msg }}
-                            <span>{{ message.exp }}</span>
                         </p>
                     </transition-group>
                     <div class="chat-send">
@@ -96,6 +85,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="error" v-else><span>{{ err }}</span></div>
         </div>
     </div>
@@ -109,6 +99,8 @@ translate.key = 'AIzaSyAECIfL6JoLrIcSGjsWHtONieQdXbcwLhI'
 export default {
     data() {
         return {
+            loading: true,
+
             title: '',
             id: '',
             movie: {},
@@ -116,15 +108,16 @@ export default {
             yts_torrents: {},
             rarbg_torrents: {},
             torrents: [],
-            err: '',
+
             getData: false,
+
             hash: '',
-            available: false,
-            streamFile: '',
             subtitles: {},
-            loading: true,
+
             messages: [],
-            input: ''
+            input: '',
+
+            err: '',
         }
     },
     watch: {
@@ -143,6 +136,7 @@ export default {
             if (result) {
                 this.loading = false
                 if (result.data.success) {
+                    console.log(result.data.data)
                     this.movie = result.data.data.movie
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
@@ -158,8 +152,7 @@ export default {
         }
     },
 	updated() {
-		var element = document.getElementById('chat-group');
-		element.scrollTop = element.scrollHeight;
+        if (this.getData) { var element = document.getElementById('chat-group'); element.scrollTop = element.scrollHeight }
 	},
     methods: {
         async download(hash, src, index) {
@@ -167,16 +160,19 @@ export default {
             var result = await this.$store.dispatch('download', this)
             if (result) {
                 if (result.data.success) {
+                    console.log(result.data.data)
                     var download = '.download-' + src + index
                     var loading = '.loading-' + src + index
                     var view = '.view-' + src + index
                     $(download).hide()
                     $(loading).show()
-                    setTimeout(() => { $(loading).hide(); $(view).show() }, 20000)
+                    setTimeout(() => { $(loading).hide(); $(view).show() }, 10000)
                     if (src === 'yts') { this.yts_torrents[index].torrentFilename = result.data.data.torrentFilename; this.yts_torrents[index].torrentPath = result.data.data.torrentPath }
                     else { this.rarbg_torrents[index].torrentFilename = result.data.data.torrentFilename; this.rarbg_torrents[index].torrentPath = result.data.data.torrentPath }
-                    this.subtitles.fr = result.data.data.subtitles[0].lang === 'fr' ? result.data.data.subtitles[0].name : result.data.data.subtitles[1].name
-                    this.subtitles.en = result.data.data.subtitles[0].lang === 'en' ? result.data.data.subtitles[0].name : result.data.data.subtitles[1].name
+                    if (result.data.data.subtitles[0] && result.data.data.subtitles[1]) {
+                        this.subtitles.en = result.data.data.subtitles[0].lang === 'en' ? result.data.data.subtitles[0].name : result.data.data.subtitles[1].name
+                        this.subtitles.fr = result.data.data.subtitles[0].lang === 'fr' ? result.data.data.subtitles[0].name : result.data.data.subtitles[1].name
+                    } else result.data.data.subtitles[0].lang === 'en' ? this.subtitles.en = result.data.data.subtitles[0] : this.subtitles.fr = result.data.data.subtitles[0]
                 }
             }
         },
@@ -184,11 +180,14 @@ export default {
             if (size / 1000000000 > 1) return (size / 1000000000).toFixed(2) + ' GB'
             else return (size / 100000000).toFixed(2) + ' MB'
         },
-        async watch(torrent, src) {
+        async update(torrent, src, path, file) {
+            if (this.$store.state.lang === 'en') var lang = this.movie.Language.search('English') >= 0 ? -1 : 1
+            else var lang = this.movie.Language.search('French') >= 0 ? -1 : 2
+            var path = path ? path : torrent.torrentPath.split('/')[0]
+            var file = file ? file : torrent.torrentFilename
             this.hash = src === 'yts' ? torrent.hash : torrent.download.split('magnet:?xt=urn:btih:')[1]
-            var result = await this.$store.dispatch('watch', this)
-            this.available = true
-            this.streamFile = '/movies/' + torrent.torrentPath
+            var result = await this.$store.dispatch('update', this)
+            this.$router.push({ name: 'watch', params: { lang: lang, path: path, movie: file } })
         },
         async sendMessage() {
             var result = await this.$store.dispatch('sendMessage', this)
@@ -371,7 +370,6 @@ video {
     width: 100%;
     padding: 0px 30px;
     border-radius: 8px;
-    background-color: #141414;
     color:lightcoral;
     border-bottom: 1px solid lightcoral;
     border-left: 1px solid lightcoral;
@@ -381,7 +379,7 @@ video {
 }
 .chat-send > input {
     border: none;
-    height: 50px;
+    height: 40px;
     width: 80%;
     color: white;
     background: none;
@@ -402,7 +400,7 @@ video {
     outline: none;
 }
 .chat-send > .fas {
-    margin-top: 15px;
+    margin-top: 10px;
     float: right;
     color: #bebebe;
     font-size: 22px;
@@ -439,7 +437,6 @@ video {
     width: 12px;
 }
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
     -webkit-border-radius: 10px;
     border-radius: 10px;
 }
@@ -447,18 +444,32 @@ video {
     -webkit-border-radius: 10px;
     border-radius: 10px;
     background: rgba(240,128,128,0.4); 
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+.me a {
+    color: white;
+    text-decoration: none;
+    position: relative;
 }
 .me span {
+    display: none;
+}
+.notme a {
+    color: white;
+    text-decoration: none;
     position: relative;
-    font-size: x-small;
-    top: -25px;
-    left: 10px;
 }
 p.notme span {
-    position: relative;
     font-size: x-small;
-    top: -25px;
-    color:white
+    top: -22px;
+    color: white;
+    left: -19px;
+    position: absolute;
+}
+p.trailer_err {
+    text-align: center;
+    height: 100%;
+    margin-top: 25%;
+    font-size: small;
+    font-style: italic;
 }
 </style>

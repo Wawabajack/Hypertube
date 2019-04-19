@@ -3,6 +3,7 @@ const app = express.Router()
 const torrent = require('../models/movie')
 const utils = require('../models/utils')
 const user = require('../models/user')
+const fs = require('fs')
 
 /**
  * Allow the user to get top torrents/movies ??
@@ -98,17 +99,55 @@ app.post('/download', isUser, (req, res) => {
  *      ---> `data` : { `authenticatedToken`, `movieTitle`, `movieId`, `movieMagnet` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
  *          ---> check if `movieId` && `movieTitle` && `movieMagnet` exists and are well-formated {{ utils::checkParams }}
- *          ---> stream the movie {{ torrent::streaming }}
  *          ---> save movie into database's user collection {{ user::saveMovie }}
  *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
  *          -----> error handling
  */
-app.post('/watch', isUser, (req, res) => {
+app.post('/update', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'movieMagnet' ])
         .then(user.saveMovie)
         .then(torrent.saveDate)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+})
+
+/**
+ * Update the movie seen by the user into the dabatase
+ *      ---> `data` : { `authenticatedToken`, `streamFile`}
+ *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
+ *          ---> check if `movieId` && `streamFile` exists and are well-formated {{ utils::checkParams }}
+ *          ---> stream the movie {{ torrent::streaming }}
+ *          ---> save movie into database's user collection {{ user::saveMovie }}
+ *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
+ *          -----> error handling
+ */
+app.get('/watch/movies/:path/:movie', (req, res) => {
+    //utils.checkParams(req, res, [ 'streamFile' ])
+    //  .then(data => {
+            console.log(req.params)
+            const path = '../client/public/movies/' + req.params.path + '/' + req.params.movie
+            const stat = fs.statSync(path)
+            const fileSize = stat.size
+            const range = req.headers.range
+            if (range) {
+                console.log(range)
+                const parts = range.replace(/bytes=/, "").split("-")
+                const start = parseInt(parts[0], 10)
+                const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+                const chunksize = (end - start) + 1
+                const file = fs.createReadStream(path, { start, end })
+                const headers = {'Content-Range': `bytes ${start}-${end}/${fileSize}`, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/mp4' }
+                console.log(headers)
+                res.writeHead(206, headers)
+                file.pipe(res)
+            } else {
+                console.log('no range')
+                const headers = { 'Content-Length': fileSize, 'Content-Type': 'video/mp4' }
+                res.writeHead(200, headers)
+                fs.createReadStream(path).pipe(res)
+            }
+    //    })
+    //    .catch(data => { console.log('error') })
 })
 
 module.exports = app

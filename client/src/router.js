@@ -86,6 +86,12 @@ export default new Router({
       component: () => import('./views/Movie.vue')
     },
     {
+      path: '/watch/:lang/:path/:movie',
+      name: 'watch',
+      title: 'Hypertube - Watching',
+      component: () => import('./views/Watch.vue')
+    },
+    {
       path: '*',
       name: 'p404',
       title: 'Hypertube - page not found',

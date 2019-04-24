@@ -9,6 +9,7 @@ const movie = require('./routes/movie.route')
 const user = require('./routes/user.route')
 const msg = require('./routes/message.route')
 require('./database')
+require('./engine')
 
 express.static.mime.define({'text/vtt': ['vtt']})
 
@@ -33,7 +34,7 @@ setInterval(() => {
                         else {
                             mongodb.collection('movies').deleteOne({ magnet: element.magnet }, (err, result) => {
                                 if (err) console.log('An error occured with the database')
-                                else console.log('Dossier',element.path,'supprimé.')
+                                else console.log('Dossier' + element.path + 'supprimé.')
                             })
                         }
                     })

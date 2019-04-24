@@ -148,23 +148,23 @@ const actions = {
   download: (store, vue) => {
     let uri = `http://${ip}/torrent/download`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieMagnet: vue.hash, movieId: vue.movie.imdbID, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { torrent: vue.torrent, movieId: vue.movie.imdbID, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })
   },
-  update: (store, vue) => {
-    let uri = `http://${ip}/torrent/update`
-    return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieTitle: vue.movie.Title, movieId: vue.movie.imdbID, movieMagnet: vue.hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
-        .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
-    })
-  },
-  watch: (store, streamFile) => {
+  watch: (store, vue) => {
     let uri = `http://${ip}/torrent/watch`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { streamFile: streamFile, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { movieId: vue.movie.imdbID, torrent: vue.torrent, authenticatedToken: localStorage.getItem('authenticatedToken') })
+        .then(result => { fullfil(result) })
+        .catch(err => { console.log(err); reject({ error: err })})
+    })
+  },
+  check: (store, hash) => {
+    let uri = `http://${ip}/torrent/check`
+    return new Promise((fullfil, reject) => {
+      axios.post(uri, { hash: hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })

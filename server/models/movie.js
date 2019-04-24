@@ -1,5 +1,7 @@
 const Promise = require('promise')
 const imdb = require('imdb-api')
+const pirabay = require('thepiratebay')
+const yts = require('yts-api-pt')
 const torrentStream = require('torrent-stream')
 const request = require('request')
 const OS = require('opensubtitles-api')
@@ -7,6 +9,11 @@ const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
 const fs = require('fs')
 const rarbgApi = require('rarbg-api')
 const srt2vtt = require('srt-to-vtt')
+const FFmpeg = require('fluent-ffmpeg');
+const FFmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+FFmpeg.setFfmpegPath(FFmpegPath)
+const rimraf = require('rimraf')
+const videoSettings = require('../videoSettings.json')
 
 module.exports.getTopTorrents = (data) => {
     return new Promise((fullfil, reject) => {
@@ -34,7 +41,7 @@ module.exports.getTopTorrents = (data) => {
 
 module.exports.getSearchedMovies = (data) => {
     return new Promise((fullfil, reject) => {
-        var lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
+        let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
         request.get({
             url: 'https://api.themoviedb.org/3/search/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&query=' + data.params.search + '&page=' + data.params.page + '&include_adult=false',
             json: true
@@ -51,8 +58,8 @@ module.exports.getSearchedMovies = (data) => {
 
 module.exports.getRecommandedMovies = (data) => {
     return new Promise((fullfil, reject) => {
-        var lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
-        var url = 'https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&sort_by=vote_average.desc&include_adult=false&include_video=false&page=' + data.params.page + '&release_date.gte=' + data.params.release_date_min + '-01-01&release_date.lte=' + data.params.release_date_max + '-12-31&vote_average.gte=' + data.params.vote_average[0] + '&vote_average.lte=' + data.params.vote_average[1]
+        let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
+        let url = 'https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&sort_by=vote_average.desc&include_adult=false&include_video=false&page=' + data.params.page + '&release_date.gte=' + data.params.release_date_min + '-01-01&release_date.lte=' + data.params.release_date_max + '-12-31&vote_average.gte=' + data.params.vote_average[0] + '&vote_average.lte=' + data.params.vote_average[1]
         url += data.params.with_genres === '-1' ? '' : '&with_genres=' + data.params.with_genres
         request.get({
             url: url,
@@ -70,7 +77,7 @@ module.exports.getRecommandedMovies = (data) => {
 
 module.exports.getMovie = (data) => {
     return new Promise((fullfil, reject) => {
-        var param = data.params.movieTitle ? '&t=' + data.params.movieTitle : '&i=' + data.params.movieId
+        let param = data.params.movieTitle ? '&t=' + data.params.movieTitle : '&i=' + data.params.movieId
         request.get({
             url: 'http://www.omdbapi.com/?apikey=4402369e&plot=full' + param,
             json: true
@@ -102,7 +109,7 @@ module.exports.getTrailer = (data) => {
             else {
                 if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
                 else { 
-                    var tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
+                    let tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
                     tmp.sort((a, b) => { return b.size - a.size });
                     if (tmp.length) data.params.trailer = 'https://www.youtube.com/embed/' + tmp[0].key + '?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&mute=1'
                     fullfil(data)
@@ -118,7 +125,7 @@ module.exports.getTorrentsByYTS = (data) => {
             url: 'https://yts.am/api/v2/list_movies.json?query_term='+ data.params.movie.imdbID
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-            var result = JSON.parse(body)
+            let result = JSON.parse(body)
             if (result.status !== 'ok') reject({ res: data.res, en_error: result.status_message, fr_error: result.status_message })
             if (result.data.movie_count) { data.params.yts_torrents = result.data.movies[0].torrents; }
             fullfil(data)
@@ -136,48 +143,42 @@ module.exports.getTorrentsByRARBG = (data) => {
 
 module.exports.downloadTorrent = (data) => {
     return new Promise((fullfil, reject) => {
-        var engine = torrentStream('magnet:?xt=urn:btih:' + data.params.movieMagnet, { path: '../client/public/movies/', verify: true })
+        let engine = torrentStream('magnet:?xt=urn:btih:' + data.params.torrent.hash, { tmp: './movies/', verify: true })
         engine.on('ready', () => {
-            console.log('ready to download')
-            engine.files.forEach(file => {
-                console.log(file.name)
-                if (file.name.search('mp4') >= 0 || file.name.search('webm') >= 0 || file.name.search('mkv') >= 0) {
-                    var stream = file.createReadStream();
-                    data.params.torrentPath = file.path
-                    data.params.torrentFilename = file.name
-                    fullfil(data);
-                }
+            let index = (eng => {
+                let max = eng.files.reduce((a, b) => ((a.length > b.length) ? a : b))
+                return eng.files.indexOf(max)
+            })(engine);
+            engine.files.forEach((file, ind) => {
+                if (ind === index) { file.select(); console.log(`File chosen: ${file.name} | ${file.length}`) } 
+                else file.deselect()
             })
-        })
-        engine.on('download', (piece) => {
-            console.log(piece)
-        })
-        engine.on('idle', (data) => {
-            console.log('download over')
+            data.params.file = engine.files[index]
+            data.params.fileInfo = { fullPath: `${engine.path}/${data.params.file.path}`, partialPath: `${engine.path}/${engine.torrent.name}`, folder: engine.torrent.name, file: data.params.file.name }
+            data.params.state = 'waiting'
+            torrent_engine.push({ hash: data.params.torrent.hash, engine: data.params.file })
             fullfil(data)
+        })
+        engine.on('download', piece => {
+            console.log(piece)
+            if (piece === 0) {
+                data.params.state = 'downloading'
+                try { this.saveTorrent(data)
+                } catch (err) { reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' }) }
+            }
+        })
+        engine.on('idle', fn => {
+            console.log('download over')
+            data.params.state = 'over'
+            try { this.saveTorrent(data); let ind = torrent_engine.findIndex(engine => { return engine.hash === data.params.torrent.hash }); torrent_engine.splice(ind, 1)
+            } catch (err) { reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' }) }
         });
     })
 }
 
-module.exports.saveTorrent = (data) => {
-    return new Promise((fullfil, reject) => {
-        mongodb.collection('movies').findOne({ id: data.params.movieId, magnet: data.params.movieMagnet, path: data.params.torrentPath.split('/')[0], file: data.params.torrentFilename }, (err, result) => {
-            if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else if (result) {
-                mongodb.collection('movies').updateOne({ id: data.params.movieId, magnet: data.params.movieMagnet, path: data.params.torrentPath.split('/')[0], file: data.params.torrentFilename }, { $set : { lastSeen: new Date() }}, (err, result) => {
-                    if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                    else fullfil(data)
-                })
-            } else {
-                mongodb.collection('movies').insertOne({ id: data.params.movieId, magnet: data.params.movieMagnet, path: data.params.torrentPath.split('/')[0], file: data.params.torrentFilename, lastSeen: new Date() }, (err, result) => {
-                    if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                    else fullfil(data)
-                })
-            }
-        })
-    })
-}
-
+/**
+ * MARCHE PLUS
+ */
 module.exports.downloadSubtitles = (data) => {
     return new Promise((fullfil, reject) => {
         data.params.subtitles = []
@@ -186,8 +187,8 @@ module.exports.downloadSubtitles = (data) => {
             imdbid: data.params.movieId
         })
             .then(results => {
-                var language = [ 'fr', 'en' ]
-                var items = 0 
+                let language = [ 'fr', 'en' ]
+                let items = 0 
                 language.forEach(lang => {
                     if (results[lang]) {
                         request.get({
@@ -195,19 +196,15 @@ module.exports.downloadSubtitles = (data) => {
                         }, (error, response, body) => {
                             if (error) reject({ res: data.res, en_error: error, fr_error: error })
                             else {
-                                var path = data.params.torrentPath.split('/')[0]
-                                var name = data.params.torrentFilename.split('.')
-                                name.pop()
-                                var tmp = path + '/' + name.join('.') + '-' + lang
-                                var path1 = '../client/public/movies/' + tmp + '.srt'
-                                var path2 = '../client/public/movies/' + tmp + '.vtt'
-                                fs.writeFile(path1, body, "utf-8", (err) => {
+                                let path = data.params.fileInfo.partialPath
+                                let name = data.params.fileInfo.folder + '-' + lang
+                                fs.writeFile(path + '/' + name + '.srt', body, "utf-8", (err) => {
                                     if (err) reject({ res: data.res, en_error: err, fr_error: err })
                                     else {
-                                        fs.createReadStream(path1)
+                                        fs.createReadStream(path + '/' + name + '.srt')
                                             .pipe(srt2vtt())
-                                            .pipe(fs.createWriteStream(path2))
-                                        data.params.subtitles.push({ lang: lang, name: '/movies/' + tmp + '.vtt' })
+                                            .pipe(fs.createWriteStream(path + '/' + name + '.vtt'))
+                                        data.params.subtitles.push({ lang: lang, fullPath:  path + '/' + name + '.vtt', file: name + '.vtt' })
                                         if (++items === language.length) fullfil(data)
                                     } 
                                 })
@@ -216,20 +213,113 @@ module.exports.downloadSubtitles = (data) => {
                     } else if (++items === language.length) fullfil(data)
                 })
             })
-            .catch(error => { console.log(error); reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
-    })
+            .catch(error => { reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
+        })
 }
 
-module.exports.saveDate = (data) => {
+module.exports.saveTorrent = (data) => {
     return new Promise((fullfil, reject) => {
-        mongodb.collection('movies').findOne({ id: data.params.movieId, magnet: data.params.movieMagnet }, (err, result) => {
+        mongodb.collection('movies').findOne({ id: data.params.movieId, hash: data.params.torrent.hash }, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
             else if (result) {
-                mongodb.collection('movies').updateOne({ id: data.params.movieId, magnet: data.params.movieMagnet }, { $set : { lastSeen: Date('Y-m-j') }}, (err, result) => {
+                if (data.params.state) {
+                    mongodb.collection('movies').updateOne({ id: data.params.movieId, hash: data.params.torrent.hash }, { $set : { lastSeen: new Date(), state: data.params.state }}, (err, result) => {
+                        if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+                        else fullfil(data)
+                    })
+                } else {
+                    mongodb.collection('movies').updateOne({ id: data.params.movieId, hash: data.params.torrent.hash }, { $set : { lastSeen: new Date() }}, (err, result) => {
+                        if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+                        else fullfil(data)
+                    })
+                }
+            } else {
+                mongodb.collection('movies').insertOne({ id: data.params.movieId, hash: data.params.torrent.hash, lastSeen: new Date(), fullPath: data.params.fileInfo.fullPath, partialPath: data.params.fileInfo.partialPath, folder: data.params.fileInfo.folder, file: data.params.fileInfo.file, size: data.params.torrent.nsize, quality: data.params.torrent.nquality, state: data.params.state, subtitles: data.params.subtitles}, (err, result) => {
                     if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                     else fullfil(data)
                 })
-            } else reject({ res: data.res, en_error: 'This movie has not been downloaded', fr_error: 'Ce film n\'a jamais été téléchargé' })
+            }
         })
+    })
+}
+
+module.exports.getInfos = (data) => {
+    return new Promise((fullfil, reject) => {
+        mongodb.collection('movies').findOne({ hash: data.params.hash }, (err, result) => {
+            if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else if (result) { data.params.info = result; fullfil(data) }
+            else reject({ res: data.res, en_error: 'This hash doesn\'t match any torrent, sorry', fr_error: 'Ce magnet ne correspond à aucun torrent, désolé' })
+        })
+    })
+}
+
+module.exports.convert = (data) => {
+    return new Promise((fullfil, reject) => {
+        let params = videoSettings[data.params.info.quality]
+        data.res.contentType('webm')
+        let convert = FFmpeg(`http://localhost:4000/torrent/stream/${data.params.hash}`)
+            .format('webm')
+            .size(params.video.size)
+            .videoCodec(params.video.codec)
+            .videoBitrate(params.video.bitrate)
+            .audioCodec(params.audio.codec)
+            .audioBitrate(params.audio.bitrate)
+            .audioChannels(2)
+            .outputOptions([ '-deadline realtime', '-error-resilient 1' ])
+            .on('error', (err) => {
+                convert.kill()
+                if (err !== 'Output stream closed') { reject({ err: data.res, en_error: err }) }
+            });
+        convert.pipe(data.res)
+        fullfil(data)
+    })
+}
+
+module.exports.stream = (data) => {
+    return new Promise((fullfil, reject) => {
+        let range = data.headers.range
+        if (data.params.info.state === 'over') {
+            let path = data.params.info.fullPath
+            fs.stat(path, (err, stats) => {
+                if (err) reject({ res: data.res, error: 'Unavailable path' })
+                else {
+                    let fileSize = stats.size
+                    if (range) {
+                        let parts = range.replace(/bytes=/, '').split('-')
+                        let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+                        let start = parseInt(parts[0], 10) < end ? parseInt(parts[0], 10) : 0 
+                        let chunksize = (end - start) + 1
+                        let file = fs.createReadStream(path, { start, end })
+                        let headers = { 'Content-Range': `bytes ${start}-${end}/${fileSize}`, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/webm' }
+                        data.res.writeHead(206, headers)
+                        file.pipe(data.res)
+                    } else {
+                        let file = fs.createReadStream(path)
+                        let headers = { 'Content-Length': fileSize, 'Content-Type': 'video/webm' }
+                        data.res.writeHead(200, headers)
+                        file.pipe(data.res)
+                    }
+                }
+            })
+        } else {
+            let path = torrent_engine.find(torrent => torrent.hash === data.params.hash).engine
+            let fileSize = path.length
+            if (range) {
+                let parts = range.replace(/bytes=/, '').split('-')
+                let start = parseInt(parts[0], 10)
+                let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+                let chunksize = (end - start) + 1
+                let file = path.createReadStream({ start, end })
+                let headers = { 'Content-Range': `bytes ${start}-${end}/${fileSize}`, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/webm' }
+                data.res.writeHead(206, headers)
+                file.pipe(data.res)
+            } else {
+                let file = path.createReadStream()
+                let headers = { 'Content-Length': fileSize, 'Content-Type': 'video/webm' }
+                data.res.writeHead(200, headers)
+                file.pipe(data.res)
+            }
+        }
+        fullfil(data)
     })
 }

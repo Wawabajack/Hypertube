@@ -59,12 +59,12 @@
 /watch:
     -C  - css
 
-    -S  - streaming mp4 && webm without issue                                                           
-        - deal with all videos format thanks to fluent-ffmpeg
-        - allow user to click on 'download' features                                                    @done
-        - handle subtitles                                                                              @done
-            --> probleme d'accent // formatage utf-8                                                    @done
-        - if user's language doesn't match movie's language then default subtitles                      @done
+    -S  - streaming mp4 && webm without issue                                                           @done
+        - streaming all format                                                                          @done                                                           
+        - deal with all videos format thanks to fluent-ffmpeg                                           @done
+        - handle subtitles                                                                              
+            --> probleme d'accent // formatage utf-8                                                    
+        - if user's language doesn't match movie's language then default subtitles                      
 
 
 BONUS (?)
@@ -72,8 +72,8 @@ BONUS (?)
     - oauth icons `register`
     - 1point per oauth strategy
     - all subtitles
-    - reactive chat with socket io `movies`
     - beautiful img for `registration`/`login`
+    - deal with different quality
 
 
 
@@ -83,9 +83,9 @@ BUGS >>
         --> wrong `movie` page
             ====> faire une recherche imdb sur chaque résultat au lieu de le faire + tard
 
-    - error 206 partial content when streaming movie                                                    @done
+    - error 206 partial content when streaming movie                                                    @done                                                
     - video not loading if its downloaded for the 1st time and no reloading                             @done
-
+    - `Output stream closed` error
 
     - { error: 'Cant find imdb in database. Are you sure this imdb exists?',
         error_code: 10 } on some movies
@@ -98,3 +98,6 @@ BUGS >>
 
     - plugin traduction ---> warning client side
             ====> check allociné api
+
+
+    - trier  qualité recommanded torrents ?

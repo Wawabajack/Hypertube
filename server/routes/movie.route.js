@@ -75,79 +75,55 @@ app.post('/movie', isUser, (req, res) => {
 
 /**
  * Allow the user to download and stream the choosen movie
- *      ---> `data` : { `authenticatedToken`, `movieMagnet`, `movieId` }
+ *      ---> `data` : { `authenticatedToken`, `torrent`, `movieId` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> check if `movieMagnet` && `movieId` exists and are well-formated {{ utils::checkParams }}
+ *          ---> check if `torrent` && `movieId` exists and are well-formated {{ utils::checkParams }}
  *          ---> download torrent {{ torrent::downloadTorrent }}
- *          ---> save torrent into database's movies collection {{ torrent::saveTorrent }}
- *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
  *          ---> get subtitles {{ torrent::downloadSubtitles }}
  *          -----> error handling
  */
 app.post('/download', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieMagnet', 'movieId' ])
+    utils.checkParams(req, res, [ 'torrent', 'movieId' ])
         .then(torrent.downloadTorrent)
+        //.then(torrent.downloadSubtitles)
         .then(torrent.saveTorrent)
-        .then(torrent.saveDate)
-        .then(torrent.downloadSubtitles)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
-/**
- * Update the movie seen by the user into the dabatase
- *      ---> `data` : { `authenticatedToken`, `movieTitle`, `movieId`, `movieMagnet` }
- *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> check if `movieId` && `movieTitle` && `movieMagnet` exists and are well-formated {{ utils::checkParams }}
- *          ---> save movie into database's user collection {{ user::saveMovie }}
- *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
- *          -----> error handling
- */
-app.post('/update', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'movieMagnet' ])
+app.post('/watch', isUser, (req, res) => {
+    utils.checkParams(req, res, [ 'movieId', 'torrent' ])
         .then(user.saveMovie)
-        .then(torrent.saveDate)
+        .then(torrent.saveTorrent)
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+})
+
+app.post('/check', isUser, (req, res) => {
+    utils.checkParams(req, res, [ 'hash' ])
+        .then(torrent.getInfos)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**
- * Update the movie seen by the user into the dabatase
- *      ---> `data` : { `authenticatedToken`, `streamFile`}
- *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> check if `movieId` && `streamFile` exists and are well-formated {{ utils::checkParams }}
- *          ---> stream the movie {{ torrent::streaming }}
+ * Update the movie seen by the user into the database and stream it
+ *          ---> convert into the right quality {{ torrent:convert }}
+ *          ---> stream it {{ torrent::stream }}
  *          ---> save movie into database's user collection {{ user::saveMovie }}
- *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveDate }}
+ *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveTorrent }}
  *          -----> error handling
  */
-app.get('/watch/movies/:path/:movie', (req, res) => {
-    //utils.checkParams(req, res, [ 'streamFile' ])
-    //  .then(data => {
-            console.log(req.params)
-            const path = '../client/public/movies/' + req.params.path + '/' + req.params.movie
-            const stat = fs.statSync(path)
-            const fileSize = stat.size
-            const range = req.headers.range
-            if (range) {
-                console.log(range)
-                const parts = range.replace(/bytes=/, "").split("-")
-                const start = parseInt(parts[0], 10)
-                const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
-                const chunksize = (end - start) + 1
-                const file = fs.createReadStream(path, { start, end })
-                const headers = {'Content-Range': `bytes ${start}-${end}/${fileSize}`, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/mp4' }
-                console.log(headers)
-                res.writeHead(206, headers)
-                file.pipe(res)
-            } else {
-                console.log('no range')
-                const headers = { 'Content-Length': fileSize, 'Content-Type': 'video/mp4' }
-                res.writeHead(200, headers)
-                fs.createReadStream(path).pipe(res)
-            }
-    //    })
-    //    .catch(data => { console.log('error') })
+app.get('/convert/:hash', (req, res) => {
+    data = { res: res, params: req.params }
+    torrent.getInfos(data)
+        .then(torrent.convert)
+})
+
+app.get('/stream/:hash', (req, res) => {
+    data = { res: res, params: req.params, headers: req.headers }
+    torrent.getInfos(data)
+        .then(torrent.stream)
 })
 
 module.exports = app

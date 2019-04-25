@@ -85,7 +85,7 @@ app.post('/movie', isUser, (req, res) => {
 app.post('/download', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'torrent', 'movieId' ])
         .then(torrent.downloadTorrent)
-        //.then(torrent.downloadSubtitles)
+        .then(torrent.downloadSubtitles)
         .then(torrent.saveTorrent)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
@@ -99,27 +99,29 @@ app.post('/watch', isUser, (req, res) => {
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
-app.post('/check', isUser, (req, res) => {
+app.post('/initialize', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'hash' ])
         .then(torrent.getInfos)
-        .then(data => { data.res.send({ success: true, data: data.params }) })
-        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .then(torrent.getSubtitles)
+        .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })
+        .catch(data => { console.log(data); console.log('error'); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**
- * Update the movie seen by the user into the database and stream it
+ * Convert the flux thanks to `/stream/:hash`
  *          ---> convert into the right quality {{ torrent:convert }}
- *          ---> stream it {{ torrent::stream }}
- *          ---> save movie into database's user collection {{ user::saveMovie }}
- *          ---> update movies collection 'lastSeen' with the current date {{ torrent::saveTorrent }}
  *          -----> error handling
  */
-app.get('/convert/:hash', (req, res) => {
+app.get('/convert/:hash/:quality', (req, res) => {
     data = { res: res, params: req.params }
     torrent.getInfos(data)
         .then(torrent.convert)
 })
 
+
+/**
+ * Get a flux thanks to a global engine if the download isn't over yet or the files 
+ */
 app.get('/stream/:hash', (req, res) => {
     data = { res: res, params: req.params, headers: req.headers }
     torrent.getInfos(data)

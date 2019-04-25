@@ -86,7 +86,7 @@ export default new Router({
       component: () => import('./views/Movie.vue')
     },
     {
-      path: '/watch/:hash',
+      path: '/watch/:quality/:hash',
       name: 'watch',
       title: 'Hypertube - Watching',
       component: () => import('./views/Watch.vue')

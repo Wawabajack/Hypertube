@@ -4,8 +4,6 @@ const pirabay = require('thepiratebay')
 const yts = require('yts-api-pt')
 const torrentStream = require('torrent-stream')
 const request = require('request')
-const OS = require('opensubtitles-api')
-const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
 const fs = require('fs')
 const rarbgApi = require('rarbg-api')
 const srt2vtt = require('srt-to-vtt')
@@ -14,6 +12,9 @@ const FFmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 FFmpeg.setFfmpegPath(FFmpegPath)
 const rimraf = require('rimraf')
 const videoSettings = require('../videoSettings.json')
+const OS = require('opensubtitles-api')
+const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
+
 
 module.exports.getTopTorrents = (data) => {
     return new Promise((fullfil, reject) => {
@@ -125,10 +126,12 @@ module.exports.getTorrentsByYTS = (data) => {
             url: 'https://yts.am/api/v2/list_movies.json?query_term='+ data.params.movie.imdbID
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-            let result = JSON.parse(body)
-            if (result.status !== 'ok') reject({ res: data.res, en_error: result.status_message, fr_error: result.status_message })
-            if (result.data.movie_count) { data.params.yts_torrents = result.data.movies[0].torrents; }
-            fullfil(data)
+            else if (body) {
+                let result = JSON.parse(body)
+                if (result.status !== 'ok') reject({ res: data.res, en_error: result.status_message, fr_error: result.status_message })
+                if (result.data.movie_count) { data.params.yts_torrents = result.data.movies[0].torrents; }
+                fullfil(data)
+            }
         })
     })
 }
@@ -176,9 +179,7 @@ module.exports.downloadTorrent = (data) => {
     })
 }
 
-/**
- * MARCHE PLUS
- */
+/*
 module.exports.downloadSubtitles = (data) => {
     return new Promise((fullfil, reject) => {
         data.params.subtitles = []
@@ -216,6 +217,25 @@ module.exports.downloadSubtitles = (data) => {
             .catch(error => { reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
         })
 }
+*/
+
+module.exports.getSubtitles = (data) => {
+    return new Promise((fullfil, reject) => {
+        data.params.subtitles = []
+        OpenSubtitles.search({ sublanguageid: 'all', imdbid: data.params.info.id })
+            .then(results => {
+                let language = [ 'fr', 'en' ]
+                let items = 0
+                language.forEach(lang => {
+                    if (results[lang]) {
+                        data.params.subtitles.push(results[lang])
+                        if (++items === language.length) fullfil(data)
+                    } else if (++items === language.length) fullfil(data)
+                }) 
+            })
+            .catch(error => { reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
+    })
+}
 
 module.exports.saveTorrent = (data) => {
     return new Promise((fullfil, reject) => {
@@ -234,7 +254,7 @@ module.exports.saveTorrent = (data) => {
                     })
                 }
             } else {
-                mongodb.collection('movies').insertOne({ id: data.params.movieId, hash: data.params.torrent.hash, lastSeen: new Date(), fullPath: data.params.fileInfo.fullPath, partialPath: data.params.fileInfo.partialPath, folder: data.params.fileInfo.folder, file: data.params.fileInfo.file, size: data.params.torrent.nsize, quality: data.params.torrent.nquality, state: data.params.state, subtitles: data.params.subtitles}, (err, result) => {
+                mongodb.collection('movies').insertOne({ id: data.params.movieId, hash: data.params.torrent.hash, lastSeen: new Date(), fullPath: data.params.fileInfo.fullPath, partialPath: data.params.fileInfo.partialPath, folder: data.params.fileInfo.folder, file: data.params.fileInfo.file, size: data.params.torrent.nsize, quality: data.params.torrent.nquality, state: data.params.state }, (err, result) => {
                     if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                     else fullfil(data)
                 })
@@ -255,17 +275,17 @@ module.exports.getInfos = (data) => {
 
 module.exports.convert = (data) => {
     return new Promise((fullfil, reject) => {
-        let params = videoSettings[data.params.info.quality]
+        let params = videoSettings[data.params.quality]
         data.res.contentType('webm')
-        let convert = FFmpeg(`http://localhost:4000/torrent/stream/${data.params.hash}`)
+        let convert = FFmpeg('http://localhost:4000/torrent/stream/' + data.params.hash)
             .format('webm')
             .size(params.video.size)
             .videoCodec(params.video.codec)
             .videoBitrate(params.video.bitrate)
             .audioCodec(params.audio.codec)
             .audioBitrate(params.audio.bitrate)
-            .audioChannels(2)
             .outputOptions([ '-deadline realtime', '-error-resilient 1' ])
+            .audioChannels(2)
             .on('error', (err) => {
                 convert.kill()
                 if (err !== 'Output stream closed') { reject({ err: data.res, en_error: err }) }

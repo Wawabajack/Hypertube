@@ -161,8 +161,8 @@ const actions = {
         .catch(err => { console.log(err); reject({ error: err })})
     })
   },
-  check: (store, hash) => {
-    let uri = `http://${ip}/torrent/check`
+  initialize: (store, hash) => {
+    let uri = `http://${ip}/torrent/initialize`
     return new Promise((fullfil, reject) => {
       axios.post(uri, { hash: hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })

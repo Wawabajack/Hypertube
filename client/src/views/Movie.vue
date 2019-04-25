@@ -86,7 +86,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="error" v-else><span>{{ err }}</span></div>
         </div>
     </div>
@@ -119,6 +118,10 @@ export default {
             messages: [],
             input: '',
 
+            available: false,
+            player: '',
+            subtitles: '',
+            
             err: '',
         }
     },
@@ -138,7 +141,6 @@ export default {
             if (result) {
                 this.loading = false
                 if (result.data.success) {
-                    console.log(result.data.data)
                     this.movie = result.data.data.movie
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
@@ -165,7 +167,6 @@ export default {
             var result = await this.$store.dispatch('download', this)
             if (result) {
                 if (result.data.success) {
-                    console.log(result.data.data)
                     var download = '.download-' + src + index
                     var loading = '.loading-' + src + index
                     var view = '.view-' + src + index
@@ -176,20 +177,18 @@ export default {
                     else { this.rarbg_torrents[index].torrentFilename = result.data.data.torrentFilename; this.rarbg_torrents[index].torrentPath = result.data.data.torrentPath }
                 }
             }
-                            /*if (result.data.data.subtitles[0] && result.data.data.subtitles[1]) {
-                                this.subtitles.en = result.data.data.subtitles[0].lang === 'en' ? result.data.data.subtitles[0].name : result.data.data.subtitles[1].name
-                                this.subtitles.fr = result.data.data.subtitles[0].lang === 'fr' ? result.data.data.subtitles[0].name : result.data.data.subtitles[1].name
-                            } else result.data.data.subtitles[0].lang === 'en' ? this.subtitles.en = result.data.data.subtitles[0] : this.subtitles.fr = result.data.data.subtitles[0]*/
         },
         getSize(size) {
             if (size / 1000000000 > 1) return (size / 1000000000).toFixed(2) + ' GB'
             else return (size / 100000000).toFixed(2) + ' MB'
         },
         async watch(torrent, src) {
+            if (this.$store.state.lang === 'en') var lang = this.movie.Language.search('English') >= 0 ? -1 : 1
+            else var lang = this.movie.Language.search('French') >= 0 ? -1 : 2
             this.torrent.hash = src === 'yts' ? torrent.hash : torrent.download.split('magnet:?xt=urn:btih:')[1].split('&')[0]
+            this.torrent.nquality = src === 'yts' ? torrent.quality.split('p')[0] : torrent.category.split('/').pop()
             var result = await this.$store.dispatch('watch', this)
-            this.$router.push({ name: 'watch', params : { hash: this.torrent.hash }})
-
+            this.$router.push({ name: 'watch', params: { hash: this.torrent.hash, quality: this.torrent.nquality } })
         },
         async sendMessage() {
             var result = await this.$store.dispatch('sendMessage', this)

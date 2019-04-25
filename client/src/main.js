@@ -5,6 +5,7 @@ import store from './store'
 
 import locale from 'element-ui/lib/locale/lang/fr'
 import element from 'element-ui'
+Vue.config.silent = true;
 Vue.use(element, { locale });
 
 import axios from 'axios'

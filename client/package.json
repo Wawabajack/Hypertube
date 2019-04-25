@@ -1,5 +1,5 @@
 {
-  "name": "matcha",
+  "name": "client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,11 +10,11 @@
     "axios": "^0.18.0",
     "blob-util": "^2.0.2",
     "element-ui": "^2.4.11",
-    "fs": "0.0.1-security",
     "node-serialize": "0.0.4",
-    "socket.io": "^2.2.0",
-    "socket.io-client": "^2.2.0",
     "translate": "^1.1.0",
+    "video.js": "^5.8.0",
+    "videojs-resolution-switcher": "^0.4.2",
+    "videojs-resolution-switcher-v6": "^0.6.0",
     "vue": "^2.5.21",
     "vue-axios": "^2.1.4",
     "vue-cookie": "^1.1.4",

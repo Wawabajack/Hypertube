@@ -43,7 +43,7 @@ module.exports.getSearchedMovies = (data) => {
     return new Promise((fullfil, reject) => {
         let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
         request.get({
-            url: 'https://api.themoviedb.org/3/search/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&query=' + data.params.search + '&page=' + data.params.page + '&include_adult=false',
+            url: `https://api.themoviedb.org/3/search/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=${lang}&query=${data.params.search}&page=${data.params.page}&include_adult=false`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -59,8 +59,8 @@ module.exports.getSearchedMovies = (data) => {
 module.exports.getRecommandedMovies = (data) => {
     return new Promise((fullfil, reject) => {
         let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
-        let url = 'https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=' + lang + '&sort_by=vote_average.desc&include_adult=false&include_video=false&page=' + data.params.page + '&release_date.gte=' + data.params.release_date_min + '-01-01&release_date.lte=' + data.params.release_date_max + '-12-31&vote_average.gte=' + data.params.vote_average[0] + '&vote_average.lte=' + data.params.vote_average[1]
-        url += data.params.with_genres === '-1' ? '' : '&with_genres=' + data.params.with_genres
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=${lang}&sort_by=vote_average.desc&include_adult=false&include_video=false&page=${data.params.page}&release_date.gte=${data.params.release_date_min}-01-01&release_date.lte=${data.params.release_date_max}-12-31&vote_average.gte=${data.params.vote_average[0]}&vote_average.lte=${data.params.vote_average[1]}`
+        url += data.params.with_genres === '-1' ? '' : `&with_genres=${data.params.with_genres}`
         request.get({
             url: url,
             json: true
@@ -77,14 +77,14 @@ module.exports.getRecommandedMovies = (data) => {
 
 module.exports.getMovie = (data) => {
     return new Promise((fullfil, reject) => {
-        let param = data.params.movieTitle ? '&t=' + data.params.movieTitle : '&i=' + data.params.movieId
+        let param = data.params.movieTitle ? `&t=${data.params.movieTitle}&y=${data.params.release}` : `&i=${data.params.movieId}`
         request.get({
-            url: `http://www.omdbapi.com/?apikey=4402369e&plot=full${param}&y=${data.params.release}`,
+            url: `http://www.omdbapi.com/?apikey=4402369e&plot=full${param}`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
             else if (body.Response === 'True') { data.params.movie = body; fullfil(data) }
-            else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
+            else { reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'}) }
         })
     })
 }
@@ -102,7 +102,7 @@ module.exports.getDownloadedTorrents = (data) => {
 module.exports.getTrailer = (data) => {
     return new Promise((fullfil, reject) => {
         request.get({
-            url: 'https://api.themoviedb.org/3/movie/' + data.params.movie.imdbID + '/videos?api_key=fcddca7f1ed48a172cfd4673adf01e53&site=Youtube&type=Trailer',
+            url: `https://api.themoviedb.org/3/movie/${data.params.movie.imdbID}/videos?api_key=fcddca7f1ed48a172cfd4673adf01e53&site=Youtube&type=Trailer`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -111,7 +111,7 @@ module.exports.getTrailer = (data) => {
             else {
                 let tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
                 tmp.sort((a, b) => { return b.size - a.size });
-                if (tmp.length) data.params.trailer = 'https://www.youtube.com/embed/' + tmp[0].key + '?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&mute=1'
+                if (tmp.length) data.params.trailer = `https://www.youtube.com/embed/${tmp[0].key}?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&mute=1`
                 fullfil(data)
             }
         })
@@ -121,7 +121,7 @@ module.exports.getTrailer = (data) => {
 module.exports.getTorrentsByYTS = (data) => {
     return new Promise((fullfil, reject) => {
         request.get({
-            url: 'https://yts.am/api/v2/list_movies.json?query_term='+ data.params.movie.imdbID
+            url: `https://yts.am/api/v2/list_movies.json?query_term=${data.params.movie.imdbID}`
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
             else if (body) {

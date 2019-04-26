@@ -8,6 +8,7 @@ module.exports.checkParams = (req, res, params) => {
         params.forEach(param => {
             if (param === 'movieTitle' && !req.body[param] && req.body['movieId']) {}
             else if (param === 'movieId' && !req.body[param] && req.body['movieTitle']) {}
+            else if (param === 'release' && !req.body[param] && req.body['movieId']) {}
             else if (!req.body[param]) reject({ res: res, en_error: 'Fields missing', fr_error: 'Vous n\'avez pas fourni toutes les informations nécessaires' })
             else {
                 if (param === 'login') {

@@ -18,7 +18,7 @@
 						<td class="size">{{ getSize(lastTorrent.size) }}</td>
 						<td class="seeds">{{ lastTorrent.seeders }}</td>
 						<td class="peers">{{ lastTorrent.leechers }}</td>
-						<td class="view"><i class="el-icon-view el-icon-right" @click="view(lastTorrent.episode_info.imdb)"></i></td>
+						<td class="view"><i class="el-icon-view el-icon-right" @click="view(lastTorrent.episode_info.imdb, lastTorrent.episode_info.themoviedb)"></i></td>
 					</tr>
 				</table>
 				<h5 class='title'>{{ $store.state.lang === 'en' ? 'Top seeders RARBG\'s torrents' : 'Les torrents RARBG avec le plus de seeders' }}</h5>
@@ -37,7 +37,7 @@
 						<td class="size">{{ getSize(seedersTorrent.size) }}</td>
 						<td class="seeds">{{ seedersTorrent.seeders }}</td>
 						<td class="peers">{{ seedersTorrent.leechers }}</td>
-						<td class="view"><i class="el-icon-view el-icon-right" @click="view(seedersTorrent.episode_info.imdb)"></i></td>
+						<td class="view"><i class="el-icon-view el-icon-right" @click="view(seedersTorrent.episode_info.imdb, seedersTorrent.episode_info.themoviedb)"></i></td>
 					</tr>
 				</table>
 				<h5 class='title'>{{ $store.state.lang === 'en' ? 'Top leechers RARBG\'s torrents' : 'Les torrents RARBG avec le plus de leechers' }}</h5>
@@ -56,7 +56,7 @@
 						<td class="size">{{ getSize(leechersTorrent.size) }}</td>
 						<td class="seeds">{{ leechersTorrent.seeders }}</td>
 						<td class="peers">{{ leechersTorrent.leechers }}</td>
-						<td class="view"><i class="el-icon-view el-icon-right" @click="view(leechersTorrent.episode_info.imdb)"></i></td>
+						<td class="view"><i class="el-icon-view el-icon-right" @click="view(leechersTorrent.episode_info.imdb, leechersTorrent.episode_info.themoviedb)"></i></td>
 					</tr>
 				</table>
 			</div>
@@ -94,8 +94,8 @@ export default {
 		}
 	},
 	methods: {
-		view(movieId) {
-			this.$router.push({ path: `/movie?id=${movieId}` })
+		view(movieId, tmpId) {
+			this.$router.push({ path: `/movie?tmp=${tmpId}&id=${movieId}` })
 		},
 		getSize(size) {
             if (size / 1000000000 > 1) return (size / 1000000000).toFixed(2) + ' GB'

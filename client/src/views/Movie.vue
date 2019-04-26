@@ -142,9 +142,15 @@ export default {
     async beforeCreate() {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
         else {
-            if (this.$route.query.id) this.id = this.$route.query.id
-            else if (this.$route.query.name && this.$route.query.tmp && this.$route.query.release) { this.title = this.$route.query.name; this.tmpId = this.$route.query.tmp; this.release = this.$route.query.release }
-            else this.$router.push({ name: 'home' })
+            if (this.$route.query.id && this.$route.query.tmp) {
+                if (!this.$route.query.release) this.$router.push({ name: 'home' })
+                this.id = this.$route.query.id; this.tmpId = this.$route.query.tmp
+            } else if (this.$route.query.name && this.$route.query.tmp) { 
+                this.title = this.$route.query.name
+                this.tmpId = this.$route.query.tmp
+                if (!this.$route.query.release) this.$router.push({ name: 'home' })
+                this.release = this.$route.query.release
+            } else this.$router.push({ name: 'home' })
             var result = await this.$store.dispatch('movie', this)
             if (result) {
                 this.loading = false
@@ -162,7 +168,7 @@ export default {
                     this.torrents = result.data.data.torrents
                     var result2 = await this.$store.dispatch('getMessages', this.movie.imdbID)
                     if (result2) if (result2.data.success) this.messages = result2.data.data.messages
-                } else this.err = result.data.en_error
+                } else this.err = this.$store.state.lang === 'en' ? result.data.en_error : result.data.fr_error
             }
         }
     },

@@ -52,14 +52,11 @@
 import BoxForgot from "@/components/auth/BoxForgot.vue";
 import Vue from "vue";
 import Vuex from "vuex";
-
 export default {
   name: "BoxLogin",
-
   components: {
     BoxForgot
   },
-
   data() {
     return {
       user: {
@@ -70,7 +67,6 @@ export default {
       oauthCode: ""
     };
   },
-
   async beforeCreate() {
     if (this.$route.params.oauthCode) {
       this.oauthCode = this.$route.params.oauthCode;
@@ -88,16 +84,18 @@ export default {
       }
     }
   },
-
   created() {
 		if (this.$route.query.loggin && this.$route.query.key)
 		{
 			console.log("ici")
 			this.logingit()
-		}
+    }
+    if (this.$route.query.error == 1){
+      this.notify( "Error!", "Mail or Login already used", "error" );
+      this.$router.push({ name: "home" });
+    }
     if (this.$route.params.login) this.user.login = this.$route.params.login;
   },
-
   methods: {
 		async logingit() {
       this.user.login = this.$route.query.loggin;
@@ -256,4 +254,3 @@ input::placeholder {
   color: #a3a3a3;
 }
 </style>
-

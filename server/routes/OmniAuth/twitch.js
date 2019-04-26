@@ -29,27 +29,21 @@ passport.use(new TwitchStrategy({
         callbackURL: "http://localhost:4000/auth/twitch/redirect"
     },
     (accessToken, refreshToken, profile, done) => {
-       console.log("----------- 1 ----------------")
-       //console.log(profile)
         mongodb.collection('user').findOne({
             $or: [{
                 login: profile._json.display_name
             }, {
                 email: profile._json.email
             }, {
-                authtwitchId: profile._json.id
+                authtwitchId: profile.id
             }]
         }).then(user => {
             if (user) {
-                console.log("----------- 2 ----------------")
-                console.log(user);
                 if (user.authtwitchId == profile.id) 
                     return done(null, user);
                 else
                     return done(null, null);
             } else {
-             //   console.log(profile);
-             console.log("----------- 3 ----------------")
                 mongodb.collection('user').insertOne({
                     login: 'Twitch_' + profile._json.display_name,
                     email: profile._json.email,
@@ -62,10 +56,8 @@ passport.use(new TwitchStrategy({
                     authtwitchId: profile.id
                 }, (err, result) => {
                     if (err) {
-                        //console.log(err);
                         return (null, null);
                     }
-                    //console.log(result.ops[0]);
                     return done(null, result.ops[0]);
                 })
             }
@@ -77,18 +69,15 @@ router.get('/', passport.authenticate('twitch'));
 router.get('/redirect', passport.authenticate('twitch', {
     failureRedirect: 'http://localhost:8080/login?error=1'
 }), (req, res) => {
- //   console.log("redirect")
     return new Promise((fullfil, reject) => {
-        //     console.log(req.user);
         const data = {};
         data.params = req.user;
         fullfil(data);
     })
     .then(utils.generateKey)
     .then(user.updateAuthenticatedToken)
-    .then(data => { /*res.send({ success: true, data: data.params })*/
+    .then(data => { 
                     res.redirect('http://localhost:8080/login?loggin='+data.params.login+'&key='+data.params.key)
 })
-  //      res.status(200).redirect('http://localhost:8080/login?logged');
 });
 module.exports = router;

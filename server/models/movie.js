@@ -153,7 +153,7 @@ module.exports.downloadTorrent = (data) => {
                 return eng.files.indexOf(max)
             })(engine);
             engine.files.forEach((file, ind) => {
-                if (ind === index) { file.select(); console.log(`File chosen: ${file.name} | ${file.length}`) } 
+                if (ind === index) { file.select(); console.log(`Chosen file: ${file.name}`) } 
                 else file.deselect()
             })
             data.params.file = engine.files[index]
@@ -179,7 +179,6 @@ module.exports.downloadTorrent = (data) => {
     })
 }
 
-/*
 module.exports.downloadSubtitles = (data) => {
     return new Promise((fullfil, reject) => {
         data.params.subtitles = []
@@ -217,25 +216,6 @@ module.exports.downloadSubtitles = (data) => {
             .catch(error => { reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
         })
 }
-*/
-
-module.exports.getSubtitles = (data) => {
-    return new Promise((fullfil, reject) => {
-        data.params.subtitles = []
-        OpenSubtitles.search({ sublanguageid: 'all', imdbid: data.params.info.id })
-            .then(results => {
-                let language = [ 'fr', 'en' ]
-                let items = 0
-                language.forEach(lang => {
-                    if (results[lang]) {
-                        data.params.subtitles.push(results[lang])
-                        if (++items === language.length) fullfil(data)
-                    } else if (++items === language.length) fullfil(data)
-                }) 
-            })
-            .catch(error => { reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' }) })
-    })
-}
 
 module.exports.saveTorrent = (data) => {
     return new Promise((fullfil, reject) => {
@@ -254,7 +234,7 @@ module.exports.saveTorrent = (data) => {
                     })
                 }
             } else {
-                mongodb.collection('movies').insertOne({ id: data.params.movieId, hash: data.params.torrent.hash, lastSeen: new Date(), fullPath: data.params.fileInfo.fullPath, partialPath: data.params.fileInfo.partialPath, folder: data.params.fileInfo.folder, file: data.params.fileInfo.file, size: data.params.torrent.nsize, quality: data.params.torrent.nquality, state: data.params.state }, (err, result) => {
+                mongodb.collection('movies').insertOne({ id: data.params.movieId, hash: data.params.torrent.hash, lastSeen: new Date(), fullPath: data.params.fileInfo.fullPath, partialPath: data.params.fileInfo.partialPath, folder: data.params.fileInfo.folder, file: data.params.fileInfo.file, size: data.params.torrent.nsize, quality: data.params.torrent.nquality, state: data.params.state, subtitles: data.params.subtitles }, (err, result) => {
                     if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                     else fullfil(data)
                 })
@@ -319,6 +299,7 @@ module.exports.stream = (data) => {
                         data.res.writeHead(200, headers)
                         file.pipe(data.res)
                     }
+                    fullfil(data)
                 }
             })
         } else {
@@ -339,7 +320,25 @@ module.exports.stream = (data) => {
                 data.res.writeHead(200, headers)
                 file.pipe(data.res)
             }
+            fullfil(data)
         }
-        fullfil(data)
+    })
+}
+
+module.exports.getSubtitles = (data) => {
+    return new Promise((fullfil, reject) => {
+        let tmp = data.params.info.subtitles.find(subtitle => subtitle.lang === data.params.lang)
+        let path = tmp.fullPath
+        fs.stat(path, (err, stats) => {
+            if (err) reject({ res: data.res, error: 'Unavailable path' })
+            else {
+                let fileSize = stats.size
+                let file = fs.createReadStream(path)
+                let headers = { 'Content-Length': fileSize, 'Content-Type': 'video/webm' }
+                data.res.writeHead(200, headers)
+                file.pipe(data.res)
+                fullfil(data)
+            }
+        })
     })
 }

@@ -102,9 +102,8 @@ app.post('/watch', isUser, (req, res) => {
 app.post('/initialize', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'hash' ])
         .then(torrent.getInfos)
-        .then(torrent.getSubtitles)
-        .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })
-        .catch(data => { console.log(data); console.log('error'); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**
@@ -120,12 +119,21 @@ app.get('/convert/:hash/:quality', (req, res) => {
 
 
 /**
- * Get a flux thanks to a global engine if the download isn't over yet or the files 
+ * Get a flux thanks to the final file's movie or a global engine if the download isn't over yet or the files 
  */
 app.get('/stream/:hash', (req, res) => {
     data = { res: res, params: req.params, headers: req.headers }
     torrent.getInfos(data)
         .then(torrent.stream)
+})
+
+/**
+ * Get a flux thanks to the subtitles .vtt files
+ */
+app.get('/subtitles/:hash/:lang', (req, res) => {
+    data = { res: res, params: req.params }
+    torrent.getInfos(data)
+        .then(torrent.getSubtitles)
 })
 
 module.exports = app

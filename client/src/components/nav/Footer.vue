@@ -17,7 +17,7 @@ footer {
     color: lightcoral;
     padding: 20px;
     font-size: small;
-    position: fixed;
+    position: relative;
     width: 100%;
     bottom: 0;
     background: #141414;

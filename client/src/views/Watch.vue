@@ -55,9 +55,9 @@ export default {
             var result = await this.$store.dispatch('initialize', this.$route.params.hash)
             if (result) {
                 if (result.data.success) {
+                    console.log(result.data.data)
                     this.info = result.data.data.info
-                    this.subtitles = result.data.data.subtitles
-                    console.log(result.data.data.subtitles)
+                    this.subtitles = this.info.subtitles
                     if (this.info.state === 'waiting') console.log('waiting')
                     else {
                         this.available = true
@@ -78,14 +78,14 @@ export default {
                     }
                 }
             })
-            /*this.subtitles.forEach(subtitle => {
+            this.subtitles.forEach(subtitle => {
                 this.player.addRemoteTextTrack({
                     kind: 'captions',
                     label: subtitle.lang,
-                    language: subtitle.langcode,
-                    src: subtitle.vtt,
+                    language: subtitle.lang,
+                    src: `http://localhost:4000/torrent/subtitles/${this.$route.params.hash}/${subtitle.lang}`,
                 }, true)
-            })*/
+            })
             this.player.play()
         }
     }

@@ -158,7 +158,7 @@ const actions = {
   movie: (store, vue) => {
     let uri = `http://${ip}/torrent/movie`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieTitle: vue.title, movieId: vue.id, tmpId: vue.tmpId, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { movieTitle: vue.title, movieId: vue.id, tmpId: vue.tmpId, release: vue.release, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })

@@ -1,68 +1,75 @@
 <template>
-	<div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)" class="container-fluid">
-		<div class="torrents-details">
-			<h5 class='title'>{{ $store.state.lang === 'en' ? 'Last RARBG\'s torrents' : 'Les derniers torrents RARBG' }}</h5>
-			<table>
-				<tr class="main">
-					<th class="name"> {{ $store.state.lang === 'en' ? 'Name' : 'Nom' }}</th>
-					<th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
-					<th class="size">{{ $store.state.lang === 'en' ? 'Size' : 'Taille' }}</th>
-					<th class="seeds">Seeders</th>
-					<th class="peers">Leechers</th>
-					<th class="dl"></th>
-				</tr>
-				<tr class="item" v-for="(lastTorrent, index) in lastTorrents" :key="`lastTorrent-${index}`">
-					<td class="name">{{ lastTorrent.title }}</td>
-					<td class="quality">{{ lastTorrent.category.split('/').pop() }}</td>
-					<td class="size">{{ getSize(lastTorrent.size) }}</td>
-					<td class="seeds">{{ lastTorrent.seeders }}</td>
-					<td class="peers">{{ lastTorrent.leechers }}</td>
-					<td class="view"><i class="el-icon-view el-icon-right" @click="view(lastTorrent.episode_info.imdb)"></i></td>
-				</tr>
-			</table>
-			<h5 class='title'>{{ $store.state.lang === 'en' ? 'Top seeders RARBG\'s torrents' : 'Les torrents RARBG avec le plus de seeders' }}</h5>
-			<table>
-				<tr class="main">
-					<th class="name">{{ $store.state.lang === 'en' ? 'Name' : 'Nom' }}</th>
-					<th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
-					<th class="size">{{ $store.state.lang === 'en' ? 'Size' : 'Taille' }}</th>
-					<th class="seeds">Seeders</th>
-					<th class="peers">Leechers</th>
-					<th class="dl"></th>
-				</tr>
-				<tr class="item" v-for="(seedersTorrent, index) in seedersTorrents" :key="`seedersTorrent-${index}`">
-					<td class="name">{{ seedersTorrent.title }}</td>
-					<td class="quality">{{ seedersTorrent.category.split('/').pop() }}</td>
-					<td class="size">{{ getSize(seedersTorrent.size) }}</td>
-					<td class="seeds">{{ seedersTorrent.seeders }}</td>
-					<td class="peers">{{ seedersTorrent.leechers }}</td>
-					<td class="view"><i class="el-icon-view el-icon-right" @click="view(seedersTorrent.episode_info.imdb)"></i></td>
-				</tr>
-			</table>
-			<h5 class='title'>{{ $store.state.lang === 'en' ? 'Top leechers RARBG\'s torrents' : 'Les torrents RARBG avec le plus de leechers' }}</h5>
-			<table>
-				<tr class="main">
-					<th class="name">{{ $store.state.lang === 'en' ? 'Name' : 'Nom' }}</th>
-					<th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
-					<th class="size">{{ $store.state.lang === 'en' ? 'Size' : 'Taille' }}</th>
-					<th class="seeds">Seeders</th>
-					<th class="peers">Leechers</th>
-					<th class="dl"></th>
-				</tr>
-				<tr class="item" v-for="(leechersTorrent, index) in leechersTorrents" :key="`leechersTorrent-${index}`">
-					<td class="name">{{ leechersTorrent.title }}</td>
-					<td class="quality">{{ leechersTorrent.category.split('/').pop() }}</td>
-					<td class="size">{{ getSize(leechersTorrent.size) }}</td>
-					<td class="seeds">{{ leechersTorrent.seeders }}</td>
-					<td class="peers">{{ leechersTorrent.leechers }}</td>
-					<td class="view"><i class="el-icon-view el-icon-right" @click="view(leechersTorrent.episode_info.imdb)"></i></td>
-				</tr>
-			</table>
+	<div class="container-fluid">
+		<div class="contain">
+			<div class="torrents-details" v-if="!loading">
+				<h5 class='title'>{{ $store.state.lang === 'en' ? 'Last RARBG\'s torrents' : 'Les derniers torrents RARBG' }}</h5>
+				<table>
+					<tr class="main">
+						<th class="name"> {{ $store.state.lang === 'en' ? 'Name' : 'Nom' }}</th>
+						<th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
+						<th class="size">{{ $store.state.lang === 'en' ? 'Size' : 'Taille' }}</th>
+						<th class="seeds">Seeders</th>
+						<th class="peers">Leechers</th>
+						<th class="dl"></th>
+					</tr>
+					<tr class="item" v-for="(lastTorrent, index) in lastTorrents" :key="`lastTorrent-${index}`">
+						<td class="name">{{ lastTorrent.title }}</td>
+						<td class="quality">{{ lastTorrent.category.split('/').pop() }}</td>
+						<td class="size">{{ getSize(lastTorrent.size) }}</td>
+						<td class="seeds">{{ lastTorrent.seeders }}</td>
+						<td class="peers">{{ lastTorrent.leechers }}</td>
+						<td class="view"><i class="el-icon-view el-icon-right" @click="view(lastTorrent.episode_info.imdb)"></i></td>
+					</tr>
+				</table>
+				<h5 class='title'>{{ $store.state.lang === 'en' ? 'Top seeders RARBG\'s torrents' : 'Les torrents RARBG avec le plus de seeders' }}</h5>
+				<table>
+					<tr class="main">
+						<th class="name">{{ $store.state.lang === 'en' ? 'Name' : 'Nom' }}</th>
+						<th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
+						<th class="size">{{ $store.state.lang === 'en' ? 'Size' : 'Taille' }}</th>
+						<th class="seeds">Seeders</th>
+						<th class="peers">Leechers</th>
+						<th class="dl"></th>
+					</tr>
+					<tr class="item" v-for="(seedersTorrent, index) in seedersTorrents" :key="`seedersTorrent-${index}`">
+						<td class="name">{{ seedersTorrent.title }}</td>
+						<td class="quality">{{ seedersTorrent.category.split('/').pop() }}</td>
+						<td class="size">{{ getSize(seedersTorrent.size) }}</td>
+						<td class="seeds">{{ seedersTorrent.seeders }}</td>
+						<td class="peers">{{ seedersTorrent.leechers }}</td>
+						<td class="view"><i class="el-icon-view el-icon-right" @click="view(seedersTorrent.episode_info.imdb)"></i></td>
+					</tr>
+				</table>
+				<h5 class='title'>{{ $store.state.lang === 'en' ? 'Top leechers RARBG\'s torrents' : 'Les torrents RARBG avec le plus de leechers' }}</h5>
+				<table>
+					<tr class="main">
+						<th class="name">{{ $store.state.lang === 'en' ? 'Name' : 'Nom' }}</th>
+						<th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
+						<th class="size">{{ $store.state.lang === 'en' ? 'Size' : 'Taille' }}</th>
+						<th class="seeds">Seeders</th>
+						<th class="peers">Leechers</th>
+						<th class="dl"></th>
+					</tr>
+					<tr class="item" v-for="(leechersTorrent, index) in leechersTorrents" :key="`leechersTorrent-${index}`">
+						<td class="name">{{ leechersTorrent.title }}</td>
+						<td class="quality">{{ leechersTorrent.category.split('/').pop() }}</td>
+						<td class="size">{{ getSize(leechersTorrent.size) }}</td>
+						<td class="seeds">{{ leechersTorrent.seeders }}</td>
+						<td class="peers">{{ leechersTorrent.leechers }}</td>
+						<td class="view"><i class="el-icon-view el-icon-right" @click="view(leechersTorrent.episode_info.imdb)"></i></td>
+					</tr>
+				</table>
+			</div>
+			<div class="animation" v-else>
+				<box-loading/>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script>
+import BoxLoading from '@/components/BoxLoading.vue'
+
 export default {
 	data() {
 		return {
@@ -95,6 +102,9 @@ export default {
             else return (size / 100000000).toFixed(2) + ' MB'
         },
 	},
+    components: {
+        BoxLoading
+    }
 }
 </script>
 
@@ -133,6 +143,11 @@ export default {
 }
 .main {
 	text-align: center;
+}
+.contain {
+    text-align: center;
+    padding-top: 116px;
+    min-height: 600px;
 }
 </style>
 

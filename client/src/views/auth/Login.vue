@@ -8,17 +8,16 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import BoxLogin from '@/components/auth/BoxLogin.vue'
 
 export default {
-    name: 'Login',
-    beforeCreate() {
-        if (this.$store.state.session) this.$router.push({ name: 'home'});
-    },
-    components: {
-        BoxLogin,
-    }
+  name: 'Login',
+  beforeCreate() {
+    if (this.$store.state.session) this.$router.push({ name: 'home'})
+  },
+  components: {
+    BoxLogin,
+  }
 }
 </script>
 

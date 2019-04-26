@@ -77,29 +77,27 @@ BONUS (?)
 
 
 BUGS >>
-    - search by name but multiples movies got the same
-        --> issues with seen movies
-        --> wrong `movie` page
-            ====> faire une recherche imdb sur chaque résultat au lieu de le faire + tard
+    - search by name but multiples movies got the same                                                  @done
+        --> issues with seen movies                                                                     @done
+        --> wrong `movie` page                                                                          @done
+            ====> faire une recherche imdb sur chaque résultat au lieu de le faire + tard               @done
 
     - error 206 partial content when streaming movie                                                    @done                                                
     - video not loading if its downloaded for the 1st time and no reloading                             @done
     - `Output stream closed` error                                                                      @done
 
-    - { error: 'Cant find imdb in database. Are you sure this imdb exists?',
-        error_code: 10 } on some movies
-    - a lot of movies not found
-
+    - { error: 'Cant find imdb in database. Are you sure this imdb exists?',                            @done
+        error_code: 10 } on some movies                                                                 @done    
+    - a lot of movies not found                                                                         @done
 
     - input `register` ---> impossible to register bc im sending 'blob adress'                          @done
         so it didnt go through Utils.checkParams                                                        @done
 
-
     - plugin traduction ---> warning client side
             ====> check allociné api
 
-
     - trier  qualité recommanded torrents ?
 
-
     - Lien vers la vidéo accessible si pas connecté
+
+    - Attendre x temps avant de lancer la vidéo si state === 'downloading' || attendre x% du file

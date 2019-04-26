@@ -1,6 +1,6 @@
 <template>
     <div class="container-fluid">
-        <div v-loading="loading" element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+        <div class="contain">
             <div class='row movie-container' v-if="getData">
                 <div class='col-md-7 movie-background'>
                     <div class='movie-foreground'>
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row torrent-container" v-if="getData && getTorrent">
+            <div class="row torrent-container" v-if="getTorrent">
                 <div class='offset-md-1 col-md-5 torrents-details'>
                     <h5>Torrents</h5>
                     <h5 class='yts-title'>Yts.am</h5>
@@ -86,12 +86,16 @@
                     </div>
                 </div>
             </div>
-            <div class="error" v-else><span>{{ err }}</span></div>
+            <div class="error" v-if='err'><span>{{ err }}</span></div>
+            <div class="animation" v-if="loading">
+				<box-loading/>
+			</div>
         </div>
     </div>
 </template>
 
 <script>
+import BoxLoading from '@/components/BoxLoading.vue'
 import translate from 'translate'
 translate.engine = 'google'
 translate.key = 'AIzaSyAECIfL6JoLrIcSGjsWHtONieQdXbcwLhI'
@@ -102,8 +106,10 @@ export default {
             loading: true,
 
             title: '',
-            id: '',
             tmpId: '',
+            release: '',
+
+            id: '',
             movie: {},
             trailer: '',
             yts_torrents: {},
@@ -137,12 +143,13 @@ export default {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
         else {
             if (this.$route.query.id) this.id = this.$route.query.id
-            else if (this.$route.query.name && this.$route.query.tmp) { this.title = this.$route.query.name; this.tmpId = this.$route.query.tmp }
+            else if (this.$route.query.name && this.$route.query.tmp && this.$route.query.release) { this.title = this.$route.query.name; this.tmpId = this.$route.query.tmp; this.release = this.$route.query.release }
             else this.$router.push({ name: 'home' })
             var result = await this.$store.dispatch('movie', this)
             if (result) {
                 this.loading = false
                 if (result.data.success) {
+                    this.getData = true
                     this.movie = result.data.data.movie
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
@@ -153,7 +160,6 @@ export default {
                     else this.getTorrent = true
                     if (result.data.data.tmpId) this.tmpId = result.data.data.tmpId
                     this.torrents = result.data.data.torrents
-                    this.getData = true
                     var result2 = await this.$store.dispatch('getMessages', this.movie.imdbID)
                     if (result2) if (result2.data.success) this.messages = result2.data.data.messages
                 } else this.err = result.data.en_error
@@ -209,6 +215,9 @@ export default {
 				type: type
 			})
         }
+    },
+    components: {
+        BoxLoading
     }
 }
 </script>
@@ -476,5 +485,10 @@ p.trailer_err {
     margin-top: 25%;
     font-size: small;
     font-style: italic;
+}
+.contain {
+    text-align: center;
+    padding-top: 116px;
+    min-height: 600px;
 }
 </style>

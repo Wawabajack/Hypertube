@@ -1,10 +1,10 @@
 <template>
-	<router-link tag="div" :to="{ path: `/movie?name=${movie.title}&tmp=${movie.id}`}">
+	<router-link tag="div" :to="{ path: `/movie?tmp=${movie.id}&name=${movie.original_title}&release=${movie.release_date.split('-')[0]}`}">
 		<figure class="search-item">
 			<i v-if="watched" class="el-icon-view"></i>
-			<img :alt="movie.title" :src="movie.poster_path ? 'https://image.tmdb.org/t/p/original/' + movie.poster_path : '/img/notfound.png'"/>
+			<img :alt="movie.original_title" :src="movie.poster_path ? 'https://image.tmdb.org/t/p/original/' + movie.poster_path : '/img/notfound.png'"/>
 			<figcaption>
-				<h4>{{ movie.title }}</h4>
+				<h4>{{ movie.original_title }}</h4>
 				<p v-if="movie.vote_average" class="rating"><i class="icon el-icon-star-on"></i>  {{ movie.vote_average }} <span>/10</span></p>
 				<p v-if="movie.overview">{{ movie.overview.substr(0, 150) }} (...)</p>
 				<p v-if="movie.release_date" class="year">{{ movie.release_date }}</p>
@@ -124,7 +124,7 @@ figcaption input[type=submit] {
     border: 2px solid lightcoral;
     width: 300px;
     overflow: hidden;
-    margin: 30px;
+		margin-right: 8px;
     box-shadow: 0 12px 15px rgba(240, 128, 128, 0.21);
 }
 .search-item .item-name {

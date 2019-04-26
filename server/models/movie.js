@@ -11,7 +11,6 @@ const FFmpeg = require('fluent-ffmpeg');
 const FFmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 FFmpeg.setFfmpegPath(FFmpegPath)
 const rimraf = require('rimraf')
-const videoSettings = require('../videoSettings.json')
 const OS = require('opensubtitles-api')
 const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
 
@@ -80,7 +79,7 @@ module.exports.getMovie = (data) => {
     return new Promise((fullfil, reject) => {
         let param = data.params.movieTitle ? '&t=' + data.params.movieTitle : '&i=' + data.params.movieId
         request.get({
-            url: 'http://www.omdbapi.com/?apikey=4402369e&plot=full' + param,
+            url: `http://www.omdbapi.com/?apikey=4402369e&plot=full${param}&y=${data.params.release}`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -107,14 +106,13 @@ module.exports.getTrailer = (data) => {
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+            else if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
+            else if (body.status_code === 34) fullfil(data)
             else {
-                if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
-                else { 
-                    let tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
-                    tmp.sort((a, b) => { return b.size - a.size });
-                    if (tmp.length) data.params.trailer = 'https://www.youtube.com/embed/' + tmp[0].key + '?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&mute=1'
-                    fullfil(data)
-                }
+                let tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
+                tmp.sort((a, b) => { return b.size - a.size });
+                if (tmp.length) data.params.trailer = 'https://www.youtube.com/embed/' + tmp[0].key + '?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&mute=1'
+                fullfil(data)
             }
         })
     })
@@ -258,16 +256,21 @@ module.exports.getInfos = (data) => {
 
 module.exports.convert = (data) => {
     return new Promise((fullfil, reject) => {
-        let params = videoSettings[data.params.quality]
+        options = [{ '240' : { size: '426x240', bitrate_video: '365k', bitrate_audio: '128k' } },
+            { '360' : { size: '640x360', bitrate_video: '730k', bitrate_audio: '196k' } },
+            { '480' : { size: '854x480', bitrate_video: '2000k', bitrate_audio: '196k' } },
+            { '720' : { size: '1280x720', bitrate_video: '3000k', bitrate_audio: '196k' } },
+            { '1080' : { size: '1920x1080', bitrate_video: '4500k', bitrate_audio: '196k' } }]
+        let settings = options.find(setting => { return setting[data.params.quality] })[data.params.quality.toString()]
         data.res.contentType('webm')
         let convert = FFmpeg('http://localhost:4000/torrent/stream/' + data.params.hash)
             .format('webm')
-            .size(params.video.size)
-            .videoCodec(params.video.codec)
-            .videoBitrate(params.video.bitrate)
-            .audioCodec(params.audio.codec)
-            .audioBitrate(params.audio.bitrate)
-            .outputOptions([ '-deadline realtime', '-error-resilient 1' ])
+            .size(settings.size)
+            .videoCodec('libvpx')
+            .videoBitrate(settings.bitrate_video)
+            .audioCodec('libopus')
+            .audioBitrate(settings.bitrate_audio)
+            .outputOptions([ '-quality realtime', '-error-resilient 1' ])
             .audioChannels(2)
             .on('error', (err) => {
                 convert.kill()

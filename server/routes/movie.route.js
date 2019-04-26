@@ -63,7 +63,7 @@ app.post('/discover', isUser, (req, res) => {
  *          -----> error handling
  */
 app.post('/movie', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'tmpId' ])
+    utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'tmpId', 'release' ])
         .then(torrent.getMovie)
         .then(torrent.getDownloadedTorrents)
         .then(torrent.getTrailer)

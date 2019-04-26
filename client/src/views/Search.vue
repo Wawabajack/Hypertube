@@ -56,7 +56,7 @@
         </div>
         <div class="searchedMovies" v-if="!fr_error && !en_error">
             <ul class="search-container list-searchedMovies" >
-                <li class="item-searchedMovie" v-for="(movie, index) in movies" :key="`mov-${index}`">
+                <li class="item-searchedMovie" v-for="(movie, index) in movies" :key="`movie-${index}`">
                     <box-search :movie="movie" :userMovies="userMovies"/>
                 </li>
             </ul>

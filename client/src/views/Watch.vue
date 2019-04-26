@@ -4,7 +4,6 @@
             <div class="video-inner-container" v-show="available">
                 <video id="myPlayer" autoplay preload="auto" controls width="640" height="264" class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered">
                     <source :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/${this.$route.params.quality}`" type="video/webm" :label="this.$route.params.quality" :res="this.$route.params.quality">
-                    <source v-if="this.$route.params.quality !== '144'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/144`" type="video/webm" label="144" res="144">
                     <source v-if="this.$route.params.quality !== '240'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/240`" type="video/webm" label="240" res="240">
                     <source v-if="this.$route.params.quality !== '360'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/360`" type="video/webm" label="360" res="360">
                     <source v-if="this.$route.params.quality !== '480'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/480`" type="video/webm" label="480" res="480">
@@ -15,8 +14,8 @@
             <div class='err' v-show="err">
                 <h3>{{ err }}</h3>
             </div>
-            <div class="animation" v-show="!available">
-                
+            <div class="animation" v-if="!available">
+                <box-loading/>
             </div>
         </div>
     </div>
@@ -27,6 +26,7 @@ import "video.js/dist/video-js.css";
 import videojs from 'video.js'
 import "videojs-resolution-switcher/lib/videojs-resolution-switcher.css"
 import videoJsResolutionSwitcher from 'videojs-resolution-switcher'
+import BoxLoading from '@/components/BoxLoading.vue'
 
 export default {
     data() {
@@ -58,10 +58,7 @@ export default {
                     this.info = result.data.data.info
                     this.subtitles = this.info.subtitles
                     if (this.info.state === 'waiting') console.log('waiting')
-                    else {
-                        this.available = true
-                        if (!this.player) this.playerInitialize()
-                    }
+                    else if (!this.player) this.playerInitialize()
                 } else this.err = this.$store.state.lang === 'en' ? result.data.en_error : result.data.fr_error
             }
         },
@@ -85,13 +82,18 @@ export default {
                     src: `http://localhost:4000/torrent/subtitles/${this.$route.params.hash}/${subtitle.lang}`,
                 }, true)
             })
-            this.player.play()
+            this.player.ready(() => {
+                this.available = true
+            })
         }
+    },
+    components: {
+        BoxLoading
     }
 }
 </script>
 
-<style>
+<style scoped>
 .video-inner-container {
     padding-top: 116px;
 }
@@ -105,5 +107,10 @@ video {
 .err h3 {
     color: white;
     padding: 150px
+}
+.videojs {
+    text-align: center;
+    padding-top: 116px;
+    min-height: 600px;
 }
 </style>

@@ -39,7 +39,11 @@ module.exports.checkParams = (req, res, params) => {
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Release date must be >= 1950 && <= 2019', fr_error: 'La date de sortie doit être >= 1950 && <= 2019' }) }
                 else if (param === 'page') {
                     var regex = /^(1|[0-9]{0,2})$/
-                    if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Unavailable page', fr_error: 'page indisponible/invalide' }) }
+                    if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Unavailable page', fr_error: 'Page indisponible/invalide' }) }
+                else if (param === 'release') {
+                    var regex = /^(19[0-9][0-9]|20[0-1][0-9])$/
+                    if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Release date incorrect', fr_error: 'La date de sortie est erroné' })
+                }
             }
         })
         fullfil({ res: res, params: req.body })

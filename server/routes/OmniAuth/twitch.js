@@ -37,7 +37,7 @@ passport.use(new TwitchStrategy({
             }, {
                 email: profile._json.email
             }, {
-                authtwitchId: profile._json.id
+                authtwitchId: profile.id
             }]
         }).then(user => {
             if (user) {

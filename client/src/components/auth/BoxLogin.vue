@@ -94,7 +94,11 @@ export default {
 		{
 			console.log("ici")
 			this.logingit()
-		}
+    }
+    if (this.$route.query.error == 1){
+      this.notify( "Error!", "Mail or Login already used", "error" );
+      this.$router.push({ name: "home" });
+    }
     if (this.$route.params.login) this.user.login = this.$route.params.login;
   },
 

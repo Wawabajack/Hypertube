@@ -63,7 +63,7 @@ app.post('/discover', isUser, (req, res) => {
  *          -----> error handling
  */
 app.post('/movie', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieTitle', 'movieId' ])
+    utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'tmpId' ])
         .then(torrent.getMovie)
         .then(torrent.getDownloadedTorrents)
         .then(torrent.getTrailer)
@@ -92,7 +92,8 @@ app.post('/download', isUser, (req, res) => {
 })
 
 app.post('/watch', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieId', 'torrent' ])
+    console.log(req.body)
+    utils.checkParams(req, res, [ 'movieId', 'torrent', 'tmpId' ])
         .then(user.saveMovie)
         .then(torrent.saveTorrent)
         .then(data => { data.res.send({ success: true, data: data.params }) })
@@ -109,7 +110,6 @@ app.post('/initialize', isUser, (req, res) => {
 /**
  * Convert the flux thanks to `/stream/:hash`
  *          ---> convert into the right quality {{ torrent:convert }}
- *          -----> error handling
  */
 app.get('/convert/:hash/:quality', (req, res) => {
     data = { res: res, params: req.params }
@@ -119,7 +119,8 @@ app.get('/convert/:hash/:quality', (req, res) => {
 
 
 /**
- * Get a flux thanks to the final file's movie or a global engine if the download isn't over yet or the files 
+ * Pipe a flux
+ *          ---> pipe the movie's flux thanks to the final file's movie or the torrent_engine if the download isn't over yet {{ torrent::stream }}
  */
 app.get('/stream/:hash', (req, res) => {
     data = { res: res, params: req.params, headers: req.headers }
@@ -128,7 +129,8 @@ app.get('/stream/:hash', (req, res) => {
 })
 
 /**
- * Get a flux thanks to the subtitles .vtt files
+ * Pipe a flux
+ *          ---> pipe the subtitles flux thanks to the final file .vtt
  */
 app.get('/subtitles/:hash/:lang', (req, res) => {
     data = { res: res, params: req.params }

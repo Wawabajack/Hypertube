@@ -1,5 +1,5 @@
 <template>
-	<router-link tag="div" :to="{ path: `/movie?name=${movie.title}`}">
+	<router-link tag="div" :to="{ path: `/movie?name=${movie.title}&tmp=${movie.id}`}">
 		<figure class="search-item">
 			<i v-if="watched" class="el-icon-view"></i>
 			<img :alt="movie.title" :src="movie.poster_path ? 'https://image.tmdb.org/t/p/original/' + movie.poster_path : '/img/notfound.png'"/>
@@ -24,11 +24,11 @@ export default {
 	watch: {
 		'movie' (n) {
 			this.watched = false
-			if (this.userMovies) if (this.userMovies.indexOf(this.movie.title) >= 0) this.watched = true
+			if (this.userMovies) if (this.userMovies.indexOf(this.movie.id.toString()) >= 0) this.watched = true
 		}
 	},
 	created() {
-		if (this.userMovies) if (this.userMovies.indexOf(this.movie.title) >= 0) this.watched = true
+		if (this.userMovies) if (this.userMovies.indexOf(this.movie.id.toString()) >= 0) this.watched = true
 	}
 }
 </script>

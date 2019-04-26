@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row torrent-container" v-if="getData">
+            <div class="row torrent-container" v-if="getData && getTorrent">
                 <div class='offset-md-1 col-md-5 torrents-details'>
                     <h5>Torrents</h5>
                     <h5 class='yts-title'>Yts.am</h5>
@@ -103,6 +103,7 @@ export default {
 
             title: '',
             id: '',
+            tmpId: '',
             movie: {},
             trailer: '',
             yts_torrents: {},
@@ -111,6 +112,7 @@ export default {
             torrent: {},
 
             getData: false,
+            getTorrent: false,
 
             hash: '',
             subtitles: {},
@@ -135,7 +137,7 @@ export default {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
         else {
             if (this.$route.query.id) this.id = this.$route.query.id
-            else if (this.$route.query.name) this.title = this.$route.query.name
+            else if (this.$route.query.name && this.$route.query.tmp) { this.title = this.$route.query.name; this.tmpId = this.$route.query.tmp }
             else this.$router.push({ name: 'home' })
             var result = await this.$store.dispatch('movie', this)
             if (result) {
@@ -147,6 +149,9 @@ export default {
                     this.trailer = result.data.data.trailer
                     if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.quality.search('1080p') >= 0 || torrent.quality.search('720p') >= 0 || torrent.quality.search('480p') >= 0 || torrent.quality.search('360p') >= 0 })
                     if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.category.search('1080') >= 0 || torrent.category.search('720') >= 0 || torrent.category.search('480') >= 0 || torrent.category.search('360') >= 0 })
+                    if (!result.data.data.yts_torrents && !result.data.data.rarbg_torrents) this.err = this.$store.state.lang === 'en' ? 'No torrents found for this movie, sorry..' : 'Aucun torrent n\'a été trouvé pour ce film, désolé..'
+                    else this.getTorrent = true
+                    if (result.data.data.tmpId) this.tmpId = result.data.data.tmpId
                     this.torrents = result.data.data.torrents
                     this.getData = true
                     var result2 = await this.$store.dispatch('getMessages', this.movie.imdbID)
@@ -156,7 +161,7 @@ export default {
         }
     },
 	updated() {
-        if (this.getData) { var element = document.getElementById('chat-group'); element.scrollTop = element.scrollHeight }
+        if (this.getTorrent) { var element = document.getElementById('chat-group'); element.scrollTop = element.scrollHeight }
 	},
     methods: {
         async download(torrent, src, index) {
@@ -304,8 +309,7 @@ ul {
 }
 .error {
     text-align: center;
-    margin-top: 50vh;
-    transform: translateY(-50%);
+    padding-top: 400px;
 }
 .error span {
     color:lightcoral;

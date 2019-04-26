@@ -257,21 +257,22 @@ module.exports.getMovies = (data) => {
 }
 
 module.exports.saveMovie = (data) => {
+    console.log(data.params)
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ login: data.params.login }, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
             else if (result.viewedMovies) {
                 var viewedMovies = result.viewedMovies
-                if (viewedMovies.findIndex( movie => { return movie === data.params.movieId }) >= 0) fullfil(data)
+                if (viewedMovies.findIndex( movie => { return movie === data.params.tmpId }) >= 0) fullfil(data)
                 else {
-                    viewedMovies.push(data.params.movieId)
+                    viewedMovies.push(data.params.tmpId)
                     mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { viewedMovies: viewedMovies }}, (err, result) => {
                         if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                         else fullfil(data)
                     })
                 }
             } else {
-                mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { viewedMovies: [ data.params.movieId ] }}, (err, result) => {
+                mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { viewedMovies: [ data.params.tmpId ] }}, (err, result) => {
                     if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                     else fullfil(data)
                 })

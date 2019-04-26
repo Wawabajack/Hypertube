@@ -48,14 +48,13 @@ export default {
         setInterval(vue => { if (!vue.available) vue.isAvailable() }, 4000, this)
     },
     beforeDestroy() {
-        this.player.dispose();
+        if (this.player) this.player.dispose()
     },
     methods: {
         async isAvailable() {
             var result = await this.$store.dispatch('initialize', this.$route.params.hash)
             if (result) {
                 if (result.data.success) {
-                    console.log(result.data.data)
                     this.info = result.data.data.info
                     this.subtitles = this.info.subtitles
                     if (this.info.state === 'waiting') console.log('waiting')

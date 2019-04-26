@@ -51,7 +51,7 @@ module.exports.getSearchedMovies = (data) => {
             else {
                 if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
                 if (!body.total_results) reject({ res: data.res, en_error: '0 movies found', fr_error: 'Aucun film n\'a été trouvé' })
-                else { data.params.movies = body.results; fullfil(data) }
+                else { data.params.movies = body.results; console.log(data.params.movies); fullfil(data) }
             }
         })
     })
@@ -140,7 +140,10 @@ module.exports.getTorrentsByRARBG = (data) => {
     return new Promise((fullfil, reject) => {
         rarbgApi.search(data.params.movie.imdbID, null, 'imdb')
             .then(result => { data.params.rarbg_torrents = result; fullfil(data) })
-            .catch(err => { reject({ res: data.res, en_error: err, fr_error: err }) })
+            .catch(err => {
+                if (err.error_code === 10 || err.error_code === 20) fullfil(data)
+                else reject({ res: data.res, en_error: err, fr_error: err })
+            })
     })
 }
 

@@ -52,7 +52,7 @@ export default {
     },
     methods: {
         async isAvailable() {
-            var result = await this.$store.dispatch('initialize', this.$route.params.hash)
+            var result = await this.$store.dispatch('initialize', this)
             if (result) {
                 if (result.data.success) {
                     this.info = result.data.data.info

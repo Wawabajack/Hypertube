@@ -51,7 +51,7 @@ module.exports.getSearchedMovies = (data) => {
             else {
                 if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
                 if (!body.total_results) reject({ res: data.res, en_error: '0 movies found', fr_error: 'Aucun film n\'a été trouvé' })
-                else { data.params.movies = body.results; console.log(data.params.movies); fullfil(data) }
+                else { data.params.movies = body.results; fullfil(data) }
             }
         })
     })
@@ -190,7 +190,7 @@ module.exports.downloadSubtitles = (data) => {
             imdbid: data.params.movieId
         })
             .then(results => {
-                let language = [ 'fr', 'en' ]
+                let language = [ 'fr', 'en', 'ru', 'it', 'de', 'ja', 'pt', 'es' ]
                 let items = 0 
                 language.forEach(lang => {
                     if (results[lang]) {

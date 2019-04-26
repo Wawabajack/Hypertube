@@ -92,7 +92,6 @@ app.post('/download', isUser, (req, res) => {
 })
 
 app.post('/watch', isUser, (req, res) => {
-    console.log(req.body)
     utils.checkParams(req, res, [ 'movieId', 'torrent', 'tmpId' ])
         .then(user.saveMovie)
         .then(torrent.saveTorrent)

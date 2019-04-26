@@ -31,6 +31,7 @@ app.post('/register', isGuest, upload.single('file'), (req, res) => {
         .then(utils.encryptPassword)
         .then(utils.generateKey)
         .then(auth.register)
+        .then(user.updateAvatar)
         .then(utils.sendActivateAccountMail)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
@@ -138,55 +139,71 @@ app.post('/getLogin', (req, res) => {
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
+app.post('/login/git', (req, res) => {
+    utils.checkParams(req, res, [ 'login', 'authenticatedToken' ])
+        .then(user.checkAuthenticatedToken)
+        .then(user.getLang)
+        .then(data => {
+            //console.log(data.params)
+            console.log('success');
+            data.res.send({
+                success: true,
+                data: data.params
+            })
+            //console.log('send');
+        })
+        .catch(data => {
+            console.log('failure');
+            data.res.send({
+                success: false,
+                en_error: data.en_error,
+                fr_error: data.fr_error
+            })
+        })
+})
+
 /**
  * Allow the user to logged in via 42
- *      ---> `data` : { `oauthCode` }
- *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isGuest }}
- *          ---> check if `oauthCode` existe {{ utils:checkParams }}
- *          ---> request to 42_api {{ auth::login42 }}
- *          ---> connect || register + connect {{ auth::login }} || {{ auth::register }}
- *          ---> generate a valid key {{ utils::generateKey }}
- *          ---> add/update an `authentificatedToken` to the user {{ user::updateAuthenticatedToken }}
- *          ---> get user's language {{ user::getLang }}
- *          ---> send a mail to validate account {{ utils::sendActivateAccountMail }}
- *          -----> error handling
- */
-app.post('/42', isGuest, (req, res) => {
-    utils.checkParams(req, res, [ 'oauthCode' ])
-        .then(auth.login42)
-        .then(auth.register)
-        .then(utils.generateKey)
-        .then(user.updateAuthenticatedToken)
-        .then(user.getLang)
-        .then(utils.sendActivateAccountMail)
-        .then(data => { data.res.send({ success: true, data: data.params }) })
-        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
-});
+**/
+
+const FortyTwoRoute = require('./OmniAuth/fortytwo');
+app.use('/fortytwo', FortyTwoRoute);
 
 /**
  * Allow the user to logged in via github
- *      ---> `data` : { `oauthCode` }
- *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isGuest }}
- *          ---> check if `oauthCode` existe {{ utils:checkParams }}
- *          ---> request to github_api {{ auth::logingithub }}
- *          ---> connect || register + connect {{ auth::login }} || {{ auth::register }}
- *          ---> generate a valid key {{ utils::generateKey }}
- *          ---> add/update an `authentificatedToken` to the user {{ user::updateAuthenticatedToken }}
- *          ---> get user's language {{ user::getLang }}
- *          ---> send a mail to validate account {{ utils::sendActivateAccountMail }}
- *          -----> error handling
- */
-app.post('/github', isGuest, (req, res) => {
-    utils.checkParams(req, res, [ 'oauthCode' ])
-        .then(auth.loginGitHub)
-        .then(auth.register)
-        .then(utils.generateKey)
-        .then(user.updateAuthenticatedToken)
-        .then(user.getLang)
-        .then(utils.sendActivateAccountMail)
-        .then(data => { data.res.send({ success: true, data: data.params }) })
-        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
-});
+**/
+
+const GithubRoute = require('./OmniAuth/github');
+app.use('/github', GithubRoute);
+
+
+/**
+ * Allow the user to logged in via slack
+**/
+
+const SlackRoute = require('./OmniAuth/slack');
+app.use('/slack', SlackRoute);
+
+/**
+ * Allow the user to logged in via twitch
+*/
+
+const DiscordRoute = require('./OmniAuth/discord');
+app.use('/discord', DiscordRoute);
+
+/**
+ * Allow the user to logged in via discord
+**/
+
+const TwitchRoute = require('./OmniAuth/twitch');
+app.use('/twitch', TwitchRoute);
+
+/**
+ * Allow the user to logged in via google
+**/
+
+const GoogleRoute = require('./OmniAuth/google');
+app.use('/google', GoogleRoute);
 
 module.exports = app;
 

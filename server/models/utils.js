@@ -11,7 +11,7 @@ module.exports.checkParams = (req, res, params) => {
             else if (!req.body[param]) reject({ res: res, en_error: 'Fields missing', fr_error: 'Vous n\'avez pas fourni toutes les informations nécessaires' })
             else {
                 if (param === 'login') {
-                    var regex = /^([a-zA-Z0-9-_.]){6,20}$/
+                    var regex = /^([a-zA-Z0-9-_. ]){6,20}$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Login isn\'t well formated', fr_error: 'Le login n\'est pas correctement formaté' }) }
                 else if (param === 'password' || param === 'passwordConfirmation') { 
                     var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/

@@ -39,6 +39,24 @@ const actions = {
         .catch(err => { console.log(err); reject({ error: err })})
     })
   },
+  logingit: (store, vue) => {
+    let uri = `http://${ip}/auth/login/git`
+    return new Promise((fullfil, reject) => {
+      axios.post(uri, { login: vue.user.login, authenticatedToken: vue.user.key })
+        .then(result => {
+          console.log(result)
+          if (result.data.success) {
+            localStorage.setItem('authenticatedToken', result.data.data.authenticatedToken)
+            vue.$session.set('user', result.data.data.login)
+            vue.$session.set('lang', result.data.data.lang)
+            store.commit('changeLogin', result.data.data.login )
+            store.commit('changeLang', result.data.data.lang )
+          }
+          fullfil(result) 
+        })
+        .catch(err => { console.log(err); reject({ error: err })})
+    })
+  },
   loginOauth: (store, vue) => {
     let uri = `http://${ip}/auth/` + vue.oauthMethod
     return new Promise((fullfil, reject) => {
@@ -155,17 +173,16 @@ const actions = {
   },
   watch: (store, vue) => {
     let uri = `http://${ip}/torrent/watch`
-    console.log(vue.tmpId)
     return new Promise((fullfil, reject) => {
       axios.post(uri, { movieId: vue.movie.imdbID, torrent: vue.torrent, tmpId: vue.tmpId, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })
   },
-  initialize: (store, hash) => {
+  initialize: (store, vue) => {
     let uri = `http://${ip}/torrent/initialize`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { hash: hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { hash: vue.$route.params.hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
         .catch(err => { console.log(err); reject({ error: err })})
     })

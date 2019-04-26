@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const cors = require('cors');
 const rimraf = require('rimraf')
+const passport = require('passport');
 
 const auth = require('./routes/auth.route')
 const movie = require('./routes/movie.route')
@@ -16,6 +17,9 @@ express.static.mime.define({'text/vtt': ['vtt']})
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(cors());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/auth', auth)
 app.use('/torrent', movie)

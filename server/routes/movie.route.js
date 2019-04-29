@@ -87,8 +87,8 @@ app.post('/download', isUser, (req, res) => {
         .then(torrent.downloadTorrent)
         .then(torrent.downloadSubtitles)
         .then(torrent.saveTorrent)
-        .then(data => { data.res.send({ success: true, data: data.params }) })
-        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })
+        .catch(data => { console.log(data); console.log('failure'); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 
@@ -120,6 +120,7 @@ app.post('/watch', isUser, (req, res) => {
 app.post('/initialize', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'hash' ])
         .then(torrent.getInfos)
+        .then(torrent.getPercentage)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
@@ -152,7 +153,7 @@ app.get('/stream/:hash', (req, res) => {
     utils.checkParams(req, res, [ 'hash' ])
         .then(torrent.getInfos)
         .then(torrent.stream)
-        .catch(data => { console.log('failure stream'); console.log(data); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**
@@ -167,7 +168,7 @@ app.get('/subtitles/:hash/:language', (req, res) => {
     utils.checkParams(req, res, [ 'hash', 'language' ])
         .then(torrent.getInfos)
         .then(torrent.getSubtitles)
-        .catch(data => { console.log('failure subtitles'); console.log(data); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 module.exports = app

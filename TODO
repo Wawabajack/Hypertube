@@ -100,4 +100,4 @@ BUGS >>
 
     - Lien vers la vidéo accessible si pas connecté
 
-    - Attendre x temps avant de lancer la vidéo si state === 'downloading' || attendre x% du file
+    - Attendre x temps avant de lancer la vidéo si state === 'downloading' || attendre x% du file       @done

@@ -46,10 +46,10 @@
                             <td class="size">{{ yts_torrent.size }}</td>
                             <td class="seeds">{{ yts_torrent.seeds }}</td>
                             <td class="peers">{{ yts_torrent.peers }}</td>
-                            <td v-if="torrents.find(torrent => torrent.hash === yts_torrent.hash)" class="dl" :class="'view-yts' + index"><i class="el-icon-view el-icon-right" @click="watch(yts_torrent, 'yts')"></i></td>
-                            <td v-else class="dl" :class="'download-yts' + index"><i class="el-icon-download el-icon-right" @click="download(yts_torrent, 'yts', index)"></i></td>
-                            <td class="dl" :class="'view-yts' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(yts_torrent, 'yts')"></i></td>
-                            <td class="dl" :class="'loading-yts' + index" style="display:none"><i class="el-icon-loading el-icon-right"></i></td>
+                            <td v-if="torrents.find(torrent => torrent.hash === yts_torrent.hash)" class="dl" :class="'view-yts' + index"><i class="el-icon-view" @click="watch(yts_torrent, 'yts')"></i></td>
+                            <td v-else class="dl" :class="'download-yts' + index"><i class="el-icon-download" @click="download(yts_torrent, 'yts', index)"></i></td>
+                            <td class="dl" :class="'view-yts' + index" style="display:none"><i class="el-icon-view" @click="watch(yts_torrent, 'yts')"></i></td>
+                            <td class="dl" :class="'loading-yts' + index" style="display:none"><i class="el-icon-loading"></i></td>
                         </tr>
                     </table>
                     <h5 class='yts-title'>Rargb</h5>
@@ -66,10 +66,10 @@
                             <td class="size">{{ getSize(rarbg_torrent.size) }}</td>
                             <td class="seeds">{{ rarbg_torrent.seeders }}</td>
                             <td class="peers">{{ rarbg_torrent.leechers }}</td>
-                            <td v-if="torrents.find(torrent => torrent.hash === rarbg_torrent.download.split('magnet:?xt=urn:btih:')[1].split('&')[0])" class="dl" :class="'view-rarbg' + index"><i class="el-icon-view el-icon-right" @click="watch(rarbg_torrent, 'rarbg')"></i></td>
-                            <td v-else class="dl" :class="'download-rarbg' + index"><i class="el-icon-download el-icon-right" @click="download(rarbg_torrent, 'rarbg', index)"></i></td>
-                            <td class="dl" :class="'view-rarbg' + index" style="display:none"><i class="el-icon-view el-icon-right" @click="watch(rarbg_torrent, 'rarbg')"></i></td>
-                            <td class="dl" :class="'loading-rarbg' + index" style="display:none"><i class="el-icon-loading el-icon-right"></i></td>
+                            <td v-if="torrents.find(torrent => torrent.hash === rarbg_torrent.download.split('magnet:?xt=urn:btih:')[1].split('&')[0])" class="dl" :class="'view-rarbg' + index"><i class="el-icon-view" @click="watch(rarbg_torrent, 'rarbg')"></i></td>
+                            <td v-else class="dl" :class="'download-rarbg' + index"><i class="el-icon-download" @click="download(rarbg_torrent, 'rarbg', index)"></i></td>
+                            <td class="dl" :class="'view-rarbg' + index" style="display:none"><i class="el-icon-view" @click="watch(rarbg_torrent, 'rarbg')"></i></td>
+                            <td class="dl" :class="'loading-rarbg' + index" style="display:none"><i class="el-icon-loading"></i></td>
                         </tr>
                     </table>
                 </div>
@@ -160,8 +160,8 @@ export default {
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
                     this.trailer = result.data.data.trailer
-                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 10 })
-                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 10 })
+                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 10 && torrent.quality !== '3D' })
+                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 10 && torrent.category.split('/').pop() !== '3D' })
                     if (!result.data.data.yts_torrents && !result.data.data.rarbg_torrents) this.err = this.$store.state.lang === 'en' ? 'No torrents found for this movie, sorry..' : 'Aucun torrent n\'a été trouvé pour ce film, désolé..'
                     else this.getTorrent = true
                     if (result.data.data.tmpId) this.tmpId = result.data.data.tmpId

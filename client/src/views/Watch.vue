@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class='videojs'>
             <div class="video-inner-container" v-show="available">
-                <video id="myPlayer" autoplay preload="auto" controls width="640" height="264" class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered">
+                <video id="myPlayer" controls width="640" height="264" class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered">
                     <source :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/${this.$route.params.quality}`" type="video/webm" :label="this.$route.params.quality" :res="this.$route.params.quality">
                     <source v-if="this.$route.params.quality !== '240'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/240`" type="video/webm" label="240" res="240">
                     <source v-if="this.$route.params.quality !== '360'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/360`" type="video/webm" label="360" res="360">
@@ -15,6 +15,8 @@
                 <h3>{{ err }}</h3>
             </div>
             <div class="animation" v-if="!available && !err">
+                <el-button v-if="percentage >= 0" type="text" icon="el-icon-video-camera-solid" @click="playerInitialize()"></el-button>
+                <el-progress v-if="percentage >= 0" class="percentage" :percentage="percentage" color="lightcoral"></el-progress>
                 <box-loading/>
             </div>
         </div>
@@ -34,6 +36,7 @@ export default {
             info: {},
 
             available: false,
+            percentage: -1,
 
             player: '',
             subtitles: [],
@@ -46,7 +49,7 @@ export default {
     },
     created() {
         if (this.$route.params.quality !== '240' && this.$route.params.quality !== '360' && this.$route.params.quality !== '480' && this.$route.params.quality !== '720' && this.$route.params.quality !== '1080') this.err = this.$store.state.lang === 'en' ? 'This quality isn\'t available' : 'Cette qualité n\'est pas disponible'
-        else setInterval(vue => { if (!vue.available) vue.isAvailable() }, 4000, this)
+        else setInterval(vue => { if (!vue.available) vue.isAvailable() }, 5000, this)
     },
     beforeDestroy() {
         if (this.player) this.player.dispose()
@@ -54,13 +57,11 @@ export default {
     methods: {
         async isAvailable() {
             var result = await this.$store.dispatch('initialize', this)
-            console.log(result)
             if (result) {
                 if (result.data.success) {
+                    this.percentage = result.data.data.percentage
                     this.info = result.data.data.info
                     this.subtitles = this.info.subtitles
-                    if (this.info.state === 'waiting') console.log('waiting')
-                    else if (!this.player) this.playerInitialize()
                 } else this.err = this.$store.state.lang === 'en' ? result.data.en_error : result.data.fr_error
             }
         },
@@ -115,7 +116,15 @@ video {
 }
 .videojs {
     text-align: center;
-    padding-top: 116px;
+    padding-top: 150px;
     min-height: 600px;
+}
+.percentage {
+    margin: auto;
+    width: 50%;
+}
+.animation button {
+    color: lightcoral;
+    outline: 0
 }
 </style>

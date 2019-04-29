@@ -13,6 +13,7 @@ FFmpeg.setFfmpegPath(FFmpegPath)
 const rimraf = require('rimraf')
 const OS = require('opensubtitles-api')
 const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
+const leftpad = require('left-pad')
 
 
 module.exports.getTopTorrents = (data) => {
@@ -118,6 +119,7 @@ module.exports.getTrailer = (data) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
             else if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
             else if (body.status_code === 34) fullfil(data)
+            else if (body.status_code === 25) fullfil(data)
             else {
                 let tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
                 tmp.sort((a, b) => { return b.size - a.size });
@@ -169,9 +171,10 @@ module.exports.downloadTorrent = (data) => {
                 else file.deselect()
             })
             data.params.file = engine.files[index]
+            let tmp = engine
             data.params.fileInfo = { fullPath: `${engine.path}/${data.params.file.path}`, partialPath: `${engine.path}/${engine.torrent.name}`, folder: engine.torrent.name, file: data.params.file.name }
             data.params.state = 'waiting'
-            torrent_engine.push({ hash: data.params.torrent.hash, engine: data.params.file })
+            torrent_engine.push({ hash: data.params.torrent.hash, file: data.params.file, engine: tmp })
             fullfil(data)
         })
         engine.on('download', piece => {
@@ -325,7 +328,7 @@ module.exports.stream = (data) => {
                 }
             })
         } else {
-            let path = torrent_engine.find(torrent => torrent.hash === data.params.hash).engine
+            let path = torrent_engine.find(torrent => torrent.hash === data.params.hash).file
             let fileSize = path.length
             if (data.params.range) {
                 let parts = data.params.range.replace(/bytes=/, '').split('-')
@@ -362,5 +365,26 @@ module.exports.getSubtitles = (data) => {
                 fullfil(data)
             }
         })
+    })
+}
+
+module.exports.getPercentage = (data) => {
+    return new Promise((fullfil, reject) => {
+        let tmp = torrent_engine.find(torrent => torrent.hash === data.params.hash)
+        let tmp_engine = tmp.engine
+        let tmp_file = tmp.file
+
+        let firstPiece = Math.floor(tmp_file.offset / tmp_engine.torrent.pieceLength)
+        let lastPiece = Math.floor((tmp_file.offset + tmp_file.length - 1) / tmp_engine.torrent.pieceLength)
+        let progress = Array.from(tmp_engine.bitfield.buffer)
+            .map(n => leftpad(n.toString(2), 8, "0"))
+            .join("")
+            .split("")
+            .slice(firstPiece, lastPiece - firstPiece)
+            .filter(bits => bits == 1)
+            .length
+        
+        data.params.percentage = (progress / (lastPiece - firstPiece) * 100).toFixed(2)
+        fullfil(data)
     })
 }

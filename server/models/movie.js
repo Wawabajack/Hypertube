@@ -162,23 +162,18 @@ module.exports.downloadTorrent = (data) => {
         let engine = torrentStream(`magnet:?xt=urn:btih:${data.params.torrent.hash}`, { tmp: './movies/', verify: true })
         let started = false
         engine.on('ready', () => {
-            let index = (eng => {
-                let max = eng.files.reduce((a, b) => ((a.length > b.length) ? a : b))
-                return eng.files.indexOf(max)
-            })(engine);
+            let index = engine.files.indexOf(engine.files.reduce((a, b) => (a.length > b.length ? a : b)))
             engine.files.forEach((file, ind) => {
                 if (ind === index) { file.select(); console.log(`Chosen file: ${file.name}`) } 
                 else file.deselect()
             })
             data.params.file = engine.files[index]
-            let tmp = engine
             data.params.fileInfo = { fullPath: `${engine.path}/${data.params.file.path}`, partialPath: `${engine.path}/${engine.torrent.name}`, folder: engine.torrent.name, file: data.params.file.name }
             data.params.state = 'waiting'
-            torrent_engine.push({ hash: data.params.torrent.hash, file: data.params.file, engine: tmp })
+            torrent_engine.push({ hash: data.params.torrent.hash, file: data.params.file, engine: engine })
             fullfil(data)
         })
         engine.on('download', piece => {
-            console.log(piece)
             started = true
             if (started) {
                 data.params.state = 'downloading'
@@ -187,7 +182,6 @@ module.exports.downloadTorrent = (data) => {
             }
         })
         engine.on('idle', fn => {
-            console.log('download over')
             data.params.state = 'over'
             try { this.saveTorrent(data); let ind = torrent_engine.findIndex(engine => { return engine.hash === data.params.torrent.hash }); torrent_engine.splice(ind, 1)
             } catch (err) { reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' }) }
@@ -221,7 +215,7 @@ module.exports.downloadSubtitles = (data) => {
                                             .pipe(srt2vtt())
                                             .pipe(fs.createWriteStream(path + '/' + name + '.vtt'))
                                         data.params.subtitles.push({ lang: lang, fullPath:  path + '/' + name + '.vtt', file: name + '.vtt' })
-                                        rimraf(path + '/' + name + '.srt', (err) => { if (err) console.log(err) })
+                                        rimraf(path + '/' + name + '.srt', (err) => { if (err) reject({ res: data.res, en_error: 'An error occured when deleting .srt files', fr_error: 'Un problème est survenu lors de la suppression des fichiers .srt' }) })
                                         if (++items === language.length) fullfil(data)
                                     } 
                                 })

@@ -87,8 +87,8 @@ app.post('/download', isUser, (req, res) => {
         .then(torrent.downloadTorrent)
         .then(torrent.downloadSubtitles)
         .then(torrent.saveTorrent)
-        .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })
-        .catch(data => { console.log(data); console.log('failure'); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 

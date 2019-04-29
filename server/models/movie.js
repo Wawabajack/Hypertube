@@ -59,7 +59,7 @@ module.exports.getSearchedMovies = (data) => {
 module.exports.getRecommandedMovies = (data) => {
     return new Promise((fullfil, reject) => {
         let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=${lang}&sort_by=vote_average.desc&include_adult=false&include_video=false&page=${data.params.page}&release_date.gte=${data.params.release_date_min}-01-01&release_date.lte=${data.params.release_date_max}-12-31&vote_average.gte=${data.params.vote_average[0]}&vote_average.lte=${data.params.vote_average[1]}`
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=${lang}&sort_by=vote_average.desc&include_adult=false&include_video=false&page=${data.params.page}&release_date.gte=${data.params.release_date_min}&release_date.lte=${data.params.release_date_max}&vote_average.gte=${data.params.vote_average[0]}&vote_average.lte=${data.params.vote_average[1]}&with_original_language=en`
         url += data.params.with_genres === '-1' ? '' : `&with_genres=${data.params.with_genres}`
         request.get({
             url: url,
@@ -84,7 +84,17 @@ module.exports.getMovie = (data) => {
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
             else if (body.Response === 'True') { data.params.movie = body; fullfil(data) }
-            else { reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'}) }
+            else if (data.params.movieTitle) {
+                let param = `&t=${data.params.movieTitle}`
+                request.get({
+                    url: `http://www.omdbapi.com/?apikey=4402369e&plot=full${param}`,
+                    json: true
+                }, (error, response, body) => {
+                    if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+                    else if (body.Response === 'True') { data.params.movie = body; fullfil(data) }
+                    else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
+                })
+            } else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
         })
     })
 }
@@ -127,7 +137,7 @@ module.exports.getTorrentsByYTS = (data) => {
             else if (body) {
                 let result = JSON.parse(body)
                 if (result.status !== 'ok') reject({ res: data.res, en_error: result.status_message, fr_error: result.status_message })
-                if (result.data.movie_count) { data.params.yts_torrents = result.data.movies[0].torrents; }
+                if (result.data.movie_count) data.params.yts_torrents = result.data.movies[0].torrents
                 fullfil(data)
             }
         })
@@ -147,7 +157,8 @@ module.exports.getTorrentsByRARBG = (data) => {
 
 module.exports.downloadTorrent = (data) => {
     return new Promise((fullfil, reject) => {
-        let engine = torrentStream('magnet:?xt=urn:btih:' + data.params.torrent.hash, { tmp: './movies/', verify: true })
+        let engine = torrentStream(`magnet:?xt=urn:btih:${data.params.torrent.hash}`, { tmp: './movies/', verify: true })
+        let started = false
         engine.on('ready', () => {
             let index = (eng => {
                 let max = eng.files.reduce((a, b) => ((a.length > b.length) ? a : b))
@@ -165,7 +176,8 @@ module.exports.downloadTorrent = (data) => {
         })
         engine.on('download', piece => {
             console.log(piece)
-            if (piece === 0) {
+            started = true
+            if (started) {
                 data.params.state = 'downloading'
                 try { this.saveTorrent(data)
                 } catch (err) { reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' }) }
@@ -206,6 +218,7 @@ module.exports.downloadSubtitles = (data) => {
                                             .pipe(srt2vtt())
                                             .pipe(fs.createWriteStream(path + '/' + name + '.vtt'))
                                         data.params.subtitles.push({ lang: lang, fullPath:  path + '/' + name + '.vtt', file: name + '.vtt' })
+                                        rimraf(path + '/' + name + '.srt', (err) => { if (err) console.log(err) })
                                         if (++items === language.length) fullfil(data)
                                     } 
                                 })
@@ -256,42 +269,45 @@ module.exports.getInfos = (data) => {
 
 module.exports.convert = (data) => {
     return new Promise((fullfil, reject) => {
-        options = [{ '240' : { size: '426x240', bitrate_video: '365k', bitrate_audio: '128k' } },
-            { '360' : { size: '640x360', bitrate_video: '730k', bitrate_audio: '196k' } },
-            { '480' : { size: '854x480', bitrate_video: '2000k', bitrate_audio: '196k' } },
-            { '720' : { size: '1280x720', bitrate_video: '3000k', bitrate_audio: '196k' } },
-            { '1080' : { size: '1920x1080', bitrate_video: '4500k', bitrate_audio: '196k' } }]
-        let settings = options.find(setting => { return setting[data.params.quality] })[data.params.quality.toString()]
-        data.res.contentType('webm')
-        let convert = FFmpeg('http://localhost:4000/torrent/stream/' + data.params.hash)
+        if (data.params.quality === 'x264' || data.params.quality === 'XVID') data.params.quality = '480'
+        if (data.params.quality.search('BD') >= 0) data.params.quality = '1080'
+        if (data.params.quality === '240' || data.params.quality === '360' || data.params.quality === '480' || data.params.quality === '720' || data.params.quality === '1080') {
+            options = [{ '240' : { size: '426x240', bitrate_video: '365k', bitrate_audio: '128k' } },
+                { '360' : { size: '640x360', bitrate_video: '730k', bitrate_audio: '196k' } },
+                { '480' : { size: '854x480', bitrate_video: '2000k', bitrate_audio: '196k' } },
+                { '720' : { size: '1280x720', bitrate_video: '3000k', bitrate_audio: '196k' } },
+                { '1080' : { size: '1920x1080', bitrate_video: '4500k', bitrate_audio: '196k' } }]
+            let settings = options.find(setting => { return setting[data.params.quality] })[data.params.quality.toString()]
+            let convert = FFmpeg(`http://localhost:4000/torrent/stream/${data.params.hash}`)
             .format('webm')
-            .size(settings.size)
-            .videoCodec('libvpx')
-            .videoBitrate(settings.bitrate_video)
-            .audioCodec('libopus')
-            .audioBitrate(settings.bitrate_audio)
-            .outputOptions([ '-quality realtime', '-error-resilient 1' ])
-            .audioChannels(2)
-            .on('error', (err) => {
-                convert.kill()
-                if (err !== 'Output stream closed') { reject({ err: data.res, en_error: err }) }
-            });
-        convert.pipe(data.res)
-        fullfil(data)
+                .size(settings.size)
+                .videoCodec('libvpx')
+                .videoBitrate(settings.bitrate_video)
+                .audioCodec('libopus')
+                .audioBitrate(settings.bitrate_audio)
+                .outputOptions([ '-quality realtime' ])
+                .audioChannels(2)
+                .on('error', (err) => {
+                    convert.kill()
+                    if (err !== 'Output stream closed') { reject({ err: data.res, en_error: err }) }
+                });
+            data.res.contentType('webm')
+            convert.pipe(data.res)
+            fullfil(data)
+        } else reject({ res: data.res, en_error: 'This quality isn\'t available', fr_error: 'Cette qualité n\'est pas disponible' })
     })
 }
 
 module.exports.stream = (data) => {
     return new Promise((fullfil, reject) => {
-        let range = data.headers.range
         if (data.params.info.state === 'over') {
             let path = data.params.info.fullPath
             fs.stat(path, (err, stats) => {
                 if (err) reject({ res: data.res, error: 'Unavailable path' })
                 else {
                     let fileSize = stats.size
-                    if (range) {
-                        let parts = range.replace(/bytes=/, '').split('-')
+                    if (data.params.range) {
+                        let parts = data.params.range.replace(/bytes=/, '').split('-')
                         let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
                         let start = parseInt(parts[0], 10) < end ? parseInt(parts[0], 10) : 0 
                         let chunksize = (end - start) + 1
@@ -311,8 +327,8 @@ module.exports.stream = (data) => {
         } else {
             let path = torrent_engine.find(torrent => torrent.hash === data.params.hash).engine
             let fileSize = path.length
-            if (range) {
-                let parts = range.replace(/bytes=/, '').split('-')
+            if (data.params.range) {
+                let parts = data.params.range.replace(/bytes=/, '').split('-')
                 let start = parseInt(parts[0], 10)
                 let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
                 let chunksize = (end - start) + 1
@@ -333,14 +349,14 @@ module.exports.stream = (data) => {
 
 module.exports.getSubtitles = (data) => {
     return new Promise((fullfil, reject) => {
-        let tmp = data.params.info.subtitles.find(subtitle => subtitle.lang === data.params.lang)
+        let tmp = data.params.info.subtitles.find(subtitle => subtitle.lang === data.params.language)
         let path = tmp.fullPath
         fs.stat(path, (err, stats) => {
             if (err) reject({ res: data.res, error: 'Unavailable path' })
             else {
                 let fileSize = stats.size
                 let file = fs.createReadStream(path)
-                let headers = { 'Content-Length': fileSize, 'Content-Type': 'video/webm' }
+                let headers = { 'Content-Length': fileSize, 'Content-Type': 'text/vtt' }
                 data.res.writeHead(200, headers)
                 file.pipe(data.res)
                 fullfil(data)

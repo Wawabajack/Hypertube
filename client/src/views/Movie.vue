@@ -143,12 +143,12 @@ export default {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
         else {
             if (this.$route.query.id && this.$route.query.tmp) {
-                if (!this.$route.query.release) this.$router.push({ name: 'home' })
+                if (this.$route.query.release) this.$router.push({ name: 'home' })
                 this.id = this.$route.query.id; this.tmpId = this.$route.query.tmp
             } else if (this.$route.query.name && this.$route.query.tmp) { 
+                if (!this.$route.query.release) this.$router.push({ name: 'home' })
                 this.title = this.$route.query.name
                 this.tmpId = this.$route.query.tmp
-                if (!this.$route.query.release) this.$router.push({ name: 'home' })
                 this.release = this.$route.query.release
             } else this.$router.push({ name: 'home' })
             var result = await this.$store.dispatch('movie', this)
@@ -160,8 +160,8 @@ export default {
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
                     this.trailer = result.data.data.trailer
-                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.quality.search('1080p') >= 0 || torrent.quality.search('720p') >= 0 || torrent.quality.search('480p') >= 0 || torrent.quality.search('360p') >= 0 })
-                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.category.search('1080') >= 0 || torrent.category.search('720') >= 0 || torrent.category.search('480') >= 0 || torrent.category.search('360') >= 0 })
+                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 10 })
+                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 10 })
                     if (!result.data.data.yts_torrents && !result.data.data.rarbg_torrents) this.err = this.$store.state.lang === 'en' ? 'No torrents found for this movie, sorry..' : 'Aucun torrent n\'a été trouvé pour ce film, désolé..'
                     else this.getTorrent = true
                     if (result.data.data.tmpId) this.tmpId = result.data.data.tmpId
@@ -204,6 +204,8 @@ export default {
             else var lang = this.movie.Language.search('French') >= 0 ? -1 : 2
             this.torrent.hash = src === 'yts' ? torrent.hash : torrent.download.split('magnet:?xt=urn:btih:')[1].split('&')[0]
             this.torrent.nquality = src === 'yts' ? torrent.quality.split('p')[0] : torrent.category.split('/').pop()
+            if (this.torrent.nquality === 'x264' || this.torrent.nquality === 'XVID') this.torrent.nquality = '480'
+            if (this.torrent.nquality.search('BD') >= 0) this.torrent.nquality = '1080'
             var result = await this.$store.dispatch('watch', this)
             this.$router.push({ name: 'watch', params: { hash: this.torrent.hash, quality: this.torrent.nquality } })
         },

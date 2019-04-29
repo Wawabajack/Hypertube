@@ -44,7 +44,6 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { login: vue.user.login, authenticatedToken: vue.user.key })
         .then(result => {
-          console.log(result)
           if (result.data.success) {
             localStorage.setItem('authenticatedToken', result.data.data.authenticatedToken)
             vue.$session.set('user', result.data.data.login)

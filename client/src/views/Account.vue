@@ -3,6 +3,9 @@
         <div class="row account-container">
             <h3 class="title">{{ $store.state.lang === "en" ? "Settings" : "Paramètres" }}</h3>
             <h4 class="login">{{ login }}</h4>
+            <div class="avatar">
+                <img :src="avatar" :alt="login"/>
+            </div>
             <div class="group">      
                 <input type="text" v-model="lastname" required @blur="updateLastname()">
                 <span class="highlight"></span>
@@ -222,6 +225,12 @@ h4.login {
 @keyframes inputHighlighter {
 	from { background:lightcoral; }
     to 	{ width:0; background:transparent; }
+}
+
+.avatar img {
+    height: 250px;
+    width: 250px;
+    margin-bottom: 50px;
 }
 </style>
 

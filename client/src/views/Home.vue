@@ -86,9 +86,9 @@ export default {
 			if (result) {
 				if (result.data.success) {
 					this.loading = false
-					this.lastTorrents = result.data.data.lastTorrents
-					this.seedersTorrents = result.data.data.seedersTorrents
-					this.leechersTorrents = result.data.data.leechersTorrents
+					this.lastTorrents = result.data.data.lastTorrents.filter(torrent => { return torrent.size / 1000000000 < 10 })
+					this.seedersTorrents = result.data.data.seedersTorrents.filter(torrent => { return torrent.size / 1000000000 < 10 })
+					this.leechersTorrents = result.data.data.leechersTorrents.filter(torrent => { return torrent.size / 1000000000 < 10 })
 				}
 			}
 		}

@@ -91,6 +91,16 @@ app.post('/download', isUser, (req, res) => {
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
+
+/**
+ * Save the movie into user's collection ('watchedMovie' variable) && update the movie into movies's collection ('lastSeen' variable)
+ *      ---> `data` : { `movieId`, `torrent`, `tmpId` }
+ *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
+ *          ---> check if `torrent` && `movieId` && `tmpId` exists and are well-formated {{ utils::checkParams }}
+ *          ---> save movies into user's collection {{ user::saveMovie }}
+ *          ---> update torrent into movie's collection {{ torrent::saveTorrent }}
+ *          -----> error handling
+ */
 app.post('/watch', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'movieId', 'torrent', 'tmpId' ])
         .then(user.saveMovie)
@@ -99,6 +109,14 @@ app.post('/watch', isUser, (req, res) => {
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
+/**
+ * Send success if the torrent is downloaded or dowloading or not even started
+ *      ---> `data` : { `hash` }
+ *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
+ *          ---> check if `hash` exists and are well-formated {{ utils::checkParams }}
+ *          ---> collect torrent's informations {{ torrent::getInfos }}
+ *          -----> error handling
+ */
 app.post('/initialize', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'hash' ])
         .then(torrent.getInfos)
@@ -108,33 +126,48 @@ app.post('/initialize', isUser, (req, res) => {
 
 /**
  * Convert the flux thanks to `/stream/:hash`
+ *      ---> `params` : { `hash`, `quality` }
  *          ---> convert into the right quality {{ torrent:convert }}
+ *          -----> error handling
  */
 app.get('/convert/:hash/:quality', (req, res) => {
-    data = { res: res, params: req.params }
-    torrent.getInfos(data)
+    req.body.hash = req.params.hash
+    req.body.quality = req.params.quality
+    utils.checkParams(req, res, [ 'hash', 'quality' ])
+        .then(torrent.getInfos)
         .then(torrent.convert)
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 
 /**
  * Pipe a flux
+ *      ---> `params` : { `hash` }
  *          ---> pipe the movie's flux thanks to the final file's movie or the torrent_engine if the download isn't over yet {{ torrent::stream }}
+ *          -----> error handling
  */
 app.get('/stream/:hash', (req, res) => {
-    data = { res: res, params: req.params, headers: req.headers }
-    torrent.getInfos(data)
+    req.body.hash = req.params.hash
+    req.body.range = req.headers.range
+    utils.checkParams(req, res, [ 'hash' ])
+        .then(torrent.getInfos)
         .then(torrent.stream)
+        .catch(data => { console.log('failure stream'); console.log(data); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**
  * Pipe a flux
+ *      ---> `params` : { `hash`, `lang` }
  *          ---> pipe the subtitles flux thanks to the final file .vtt
+ *          -----> error handling
  */
-app.get('/subtitles/:hash/:lang', (req, res) => {
-    data = { res: res, params: req.params }
-    torrent.getInfos(data)
+app.get('/subtitles/:hash/:language', (req, res) => {
+    req.body.hash = req.params.hash
+    req.body.language = req.params.language
+    utils.checkParams(req, res, [ 'hash', 'language' ])
+        .then(torrent.getInfos)
         .then(torrent.getSubtitles)
+        .catch(data => { console.log('failure subtitles'); console.log(data); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 module.exports = app

@@ -1,6 +1,6 @@
 <template>
     <footer>
-        <div>Copyright © 2019 <span class="title">Hypertube</span> - <span class="name">tbroggi</span></div>
+        <div>Copyright © 2019 <span class="title">Hypertube</span> - <span class="name">tbroggi / cchauvin / brobicho </span></div>
     </footer>
 </template>
 

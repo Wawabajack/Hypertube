@@ -29,14 +29,14 @@ module.exports.checkParams = (req, res, params) => {
                 else if (param === 'with_genres') {
                     var regex = /^(-1|28|12|16|35|80|99|18|10751|14|27|10749|878|53|10752|37)$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Unavailable genre', fr_error: 'Genre indisponible' }) }
-                else if (param === 'with_original_language') {
-                    var regex = /^(fr|en)$/
+                else if (param === 'language') {
+                    var regex = /^(fr|en|ru|it|de|ja|pt|es)$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Unavailable language', fr_error: 'Langue indisponible' }) }
                 else if (param === 'vote_average') {
                     var regex = /^([0-9]|10)$/
                     if (!regex.test(req.body[param][0]) || !regex.test(req.body[param][1])) reject({ res: res, en_error: 'Average vote must be >= 0 && <= 10', fr_error: 'La popularité doit être >= 0 && <= 10' }) }
                 else if (param === 'release_date_min' || param === 'release_date_max') {
-                    var regex = /^(19[5-9][0-9]|20[0-1][0-9])$/
+                    var regex = /^(19[8-9][0-9]|20[0-1][0-8])$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Release date must be >= 1950 && <= 2019', fr_error: 'La date de sortie doit être >= 1950 && <= 2019' }) }
                 else if (param === 'page') {
                     var regex = /^(1|[0-9]{0,2})$/
@@ -44,6 +44,9 @@ module.exports.checkParams = (req, res, params) => {
                 else if (param === 'release') {
                     var regex = /^(19[0-9][0-9]|20[0-1][0-9])$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Release date incorrect', fr_error: 'La date de sortie est erroné' })
+                } else if (param === 'hash') {
+                    var regex = /^([a-zA-Z0-9]){40}$/
+                    if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Torrent\'s magnet isn\'t well formated', fr_error: 'Le magnet du torrent n\'est pas correctement formaté'})
                 }
             }
         })

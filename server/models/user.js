@@ -137,8 +137,6 @@ module.exports.checkAuthenticatedToken = (data) => {
 }
 
 module.exports.updateAuthenticatedToken = (data) => {
-    console.log(data.params.login)
-    console.log(data.params.key)
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { authenticatedToken: data.params.key }}, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
@@ -281,19 +279,3 @@ module.exports.saveMovie = (data) => {
         })
     })
 }
-
-/*
-module.exports.checkKey = (data) => {
-    console.log("check key");
-    console.log(data);
-    return new Promise((fullfil, reject) => {
-        mongodb.collection('user').findOne({ authenticatedToken: data.params.authenticatedToken }, (err, result) => {
-            if (result) { data.params.login = result.login; fullfil(data) }
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
-            }
-        })
-    })
-}
-*/

@@ -89,8 +89,8 @@ export default {
             genre: '-1',
             language: 'en',
             disc_vote_average: [0, 10],
-            disc_release_date_min: 1950,
-            disc_release_date_max: 2019,
+            disc_release_date_min: 1980,
+            disc_release_date_max: 2018,
 
             fr_error: '',
             en_error: '',

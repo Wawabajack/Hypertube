@@ -33,7 +33,7 @@ setInterval(() => {
             result.forEach(element => {
                 var date = ((new Date().getTime() / 86400000) - (new Date(element.lastSeen).getTime() / 86400000)).toFixed(0)
                 if (date >= 30) {
-                    rimraf('../client/public/movies/' + element.path, (err) => {
+                    rimraf(`../client/public/movies/${element.path}`, (err) => {
                         if (err) console.log(err)
                         else {
                             mongodb.collection('movies').deleteOne({ magnet: element.magnet }, (err, result) => {

@@ -67,11 +67,11 @@
 
 
 BONUS (?)
-    - refonte visuelle input img `register`, `account`
-    - oauth icons `register`
-    - 1point per oauth strategy
+    - refonte visuelle input img `register`, `account`                                                  
+    - oauth icons `register`                                                                            @done
+    - 5point per oauth strategy                                                                         + 4 => 20 pts
     - all subtitles                                                                                     @done
-    - beautiful img for `registration`/`login`
+    - beautiful img for `registration`/`login`                                                          @done
     - deal with different quality                                                                       @done
 
 
@@ -96,7 +96,7 @@ BUGS >>
     - plugin traduction ---> warning client side
             ====> check allociné api
 
-    - trier  qualité recommanded torrents ?
+    - trier size recommanded torrents                                                                   @done
 
     - Lien vers la vidéo accessible si pas connecté
 

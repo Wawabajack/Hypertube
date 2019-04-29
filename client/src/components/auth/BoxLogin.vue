@@ -25,23 +25,23 @@
         <a href="http://localhost:4000/auth/fortytwo/">42</a>
       </li>
       <li>
-        <!--	<a href='https://github.com/login/oauth/authorize?client_id=a92145361450ff616ae0'>GITHUB</a> -->
-        <a href="http://localhost:4000/auth/github/">GITHUB</a>
+        <!--    <a href='https://github.com/login/oauth/authorize?client_id=a92145361450ff616ae0'>GITHUB</a> -->
+        <a class="fab fa-github" href="http://localhost:4000/auth/github/"></a>
       </li>
       <li>
           <!--  <a href="https://slack.com/oauth/authorize?client_id=603373723154.603304870643&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2Fslack&response_type=code&scope=identify">Slack</a> -->
-        <a href="http://localhost:4000/auth/slack/">Slack</a>
+        <a class="fab fa-slack" href="http://localhost:4000/auth/slack/"></a>
       </li>
       <li>
         <!-- <a href="https://id.twitch.tv/oauth2/authorize?client_id=6dyk1rffx2sq6ger9kk7qpa588bbxn&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2Ftwitch&response_type=code">Twitch</a> -->
-        <a href="http://localhost:4000/auth/twitch/">Twitch</a>
+        <a class="fab fa-twitch" href="http://localhost:4000/auth/twitch/"></a>
       </li>
       <li>
         <!-- <a href="https://discordapp.com/api/oauth2/authorize?client_id=569901989304205357&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2Fdiscord&response_type=code&scope=identify%20email">Discord</a> -->
-        <a href="http://localhost:4000/auth/discord/">Discord</a>
+        <a class="fab fa-discord" href="http://localhost:4000/auth/discord/"></a>
       </li>
       <li>
-        <a href="http://localhost:4000/auth/google/">Google</a>
+        <a class="fab fa-google" href="http://localhost:4000/auth/google/"></a>
       </li>
     </ul>
     <button class="button" @click="login">Login</button>
@@ -69,54 +69,45 @@ export default {
   },
   async beforeCreate() {
     if (this.$route.params.oauthCode) {
-      this.oauthCode = this.$route.params.oauthCode;
-      this.oauthMethod = this.$route.params.oauthMethod;
-      var result = await this.$store.dispatch("loginOauth", this);
+      this.oauthCode = this.$route.params.oauthCode
+      this.oauthMethod = this.$route.params.oauthMethod
+      var result = await this.$store.dispatch("loginOauth", this)
       if (result) {
         if (result.data.success) {
-          this.notify(
-            "Login successful",
-            "Welcome and enjoy Hypertube :-)",
-            "success"
-          );
-          this.$router.push({ name: "home" });
-        } else this.notify("Error!", result.data.en_error, "error");
+          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" )
+          this.$router.push({ name: "home" })
+        } else this.notify("Error!", result.data.en_error, "error")
       }
     }
   },
   created() {
-		if (this.$route.query.loggin && this.$route.query.key)
-		{
-			console.log("ici")
-			this.logingit()
+		if (this.$route.query.loggin && this.$route.query.key) this.logingit()
+    if (this.$route.query.error == 1) {
+      this.notify( "Error!", "Mail or Login already used", "error" )
+      this.$router.push({ name: "home" })
     }
-    if (this.$route.query.error == 1){
-      this.notify( "Error!", "Mail or Login already used", "error" );
-      this.$router.push({ name: "home" });
-    }
-    if (this.$route.params.login) this.user.login = this.$route.params.login;
+    if (this.$route.params.login) this.user.login = this.$route.params.login
   },
   methods: {
 		async logingit() {
-      this.user.login = this.$route.query.loggin;
-      this.user.key = this.$route.query.key;
-      var result = await this.$store.dispatch("logingit", this);
-        if (result) {
-          console.log(result)
+      this.user.login = this.$route.query.loggin
+      this.user.key = this.$route.query.key
+      var result = await this.$store.dispatch("logingit", this)
+      if (result) {
         if (result.data.success) {
-          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" );
-          this.$router.push({ name: "home" });
-        } else this.notify("Error!", result.data.en_error, "error");
+          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" )
+          this.$router.push({ name: "home" })
+        } else this.notify("Error!", result.data.en_error, "error")
       }
 		},
 		
     async login() {
-      var result = await this.$store.dispatch("login", this);
+      var result = await this.$store.dispatch("login", this)
       if (result) {
         if (result.data.success) {
-          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" );
-          this.$router.push({ name: "home" });
-        } else this.notify("Error!", result.data.en_error, "error");
+          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" )
+          this.$router.push({ name: "home" })
+        } else this.notify("Error!", result.data.en_error, "error")
       }
     },
     notify(title, message, type) {
@@ -124,7 +115,7 @@ export default {
         title: title,
         message: message,
         type: type
-      });
+      })
     }
   }
 };

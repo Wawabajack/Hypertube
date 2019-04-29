@@ -143,23 +143,8 @@ app.post('/login/git', (req, res) => {
     utils.checkParams(req, res, [ 'login', 'authenticatedToken' ])
         .then(user.checkAuthenticatedToken)
         .then(user.getLang)
-        .then(data => {
-            //console.log(data.params)
-            console.log('success');
-            data.res.send({
-                success: true,
-                data: data.params
-            })
-            //console.log('send');
-        })
-        .catch(data => {
-            console.log('failure');
-            data.res.send({
-                success: false,
-                en_error: data.en_error,
-                fr_error: data.fr_error
-            })
-        })
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error })})
 })
 
 /**

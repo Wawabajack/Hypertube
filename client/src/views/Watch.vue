@@ -14,7 +14,7 @@
             <div class='err' v-show="err">
                 <h3>{{ err }}</h3>
             </div>
-            <div class="animation" v-if="!available">
+            <div class="animation" v-if="!available && !err">
                 <box-loading/>
             </div>
         </div>
@@ -45,7 +45,8 @@ export default {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
     },
     created() {
-        setInterval(vue => { if (!vue.available) vue.isAvailable() }, 4000, this)
+        if (this.$route.params.quality !== '240' && this.$route.params.quality !== '360' && this.$route.params.quality !== '480' && this.$route.params.quality !== '720' && this.$route.params.quality !== '1080') this.err = this.$store.state.lang === 'en' ? 'This quality isn\'t available' : 'Cette qualité n\'est pas disponible'
+        else setInterval(vue => { if (!vue.available) vue.isAvailable() }, 4000, this)
     },
     beforeDestroy() {
         if (this.player) this.player.dispose()
@@ -53,6 +54,7 @@ export default {
     methods: {
         async isAvailable() {
             var result = await this.$store.dispatch('initialize', this)
+            console.log(result)
             if (result) {
                 if (result.data.success) {
                     this.info = result.data.data.info
@@ -74,16 +76,19 @@ export default {
                     }
                 }
             })
-            this.subtitles.forEach(subtitle => {
-                this.player.addRemoteTextTrack({
-                    kind: 'captions',
-                    label: subtitle.lang,
-                    language: subtitle.lang,
-                    src: `http://localhost:4000/torrent/subtitles/${this.$route.params.hash}/${subtitle.lang}`,
-                }, true)
-            })
+            if (this.subtitles) {
+                this.subtitles.forEach(subtitle => {
+                    this.player.addRemoteTextTrack({
+                        kind: 'captions',
+                        label: subtitle.lang,
+                        language: subtitle.lang,
+                        src: `http://localhost:4000/torrent/subtitles/${this.$route.params.hash}/${subtitle.lang}`,
+                    }, true)
+                })
+            }
             this.player.ready(() => {
                 this.available = true
+                $(".vjs-texttrack-settings").css("display","none");
             })
         }
     },

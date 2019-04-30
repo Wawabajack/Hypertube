@@ -94,7 +94,7 @@ app.post('/download', isUser, (req, res) => {
 
 /**
  * Save the movie into user's collection ('watchedMovie' variable) && update the movie into movies's collection ('lastSeen' variable)
- *      ---> `data` : { `movieId`, `torrent`, `tmpId` }
+ *      ---> `data` : { `authenticatedToken`, `movieId`, `torrent`, `tmpId` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
  *          ---> check if `torrent` && `movieId` && `tmpId` exists and are well-formated {{ utils::checkParams }}
  *          ---> save movies into user's collection {{ user::saveMovie }}
@@ -111,7 +111,7 @@ app.post('/watch', isUser, (req, res) => {
 
 /**
  * Send success if the torrent is downloaded or dowloading or not even started
- *      ---> `data` : { `hash` }
+ *      ---> `data` : { `authenticatedToken`, `hash` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
  *          ---> check if `hash` exists and are well-formated {{ utils::checkParams }}
  *          ---> collect torrent's informations {{ torrent::getInfos }}

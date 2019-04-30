@@ -286,9 +286,8 @@ module.exports.convert = (data) => {
                 .audioChannels(2)
                 .on('error', (err) => {
                     convert.kill()
-                    if (err !== 'Output stream closed') { reject({ err: data.res, en_error: err }) }
+                    if (err !== 'Output stream closed') reject({ err: data.res, en_error: err })
                 });
-            data.res.contentType('webm')
             convert.pipe(data.res)
             fullfil(data)
         } else reject({ res: data.res, en_error: 'This quality isn\'t available', fr_error: 'Cette qualité n\'est pas disponible' })

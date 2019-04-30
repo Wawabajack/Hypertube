@@ -46,6 +46,6 @@ setInterval(() => {
             });
         }
     })
-}, 1440000)
+}, 86400000)
 
 app.listen(4000, () => { console.log('Hypertube server online on port:', 4000) })

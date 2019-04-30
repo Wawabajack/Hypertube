@@ -4,7 +4,8 @@
             <h3 class="title">{{ $store.state.lang === "en" ? "Settings" : "Paramètres" }}</h3>
             <h4 class="login">{{ login }}</h4>
             <div class="avatar">
-                <img :src="avatar" :alt="login"/>
+                <img v-if="avatar" :src="avatar" :alt="login"/>
+                <img v-else src="img/notfound.png" :alt="login"/>
             </div>
             <div class="group">      
                 <input type="text" v-model="lastname" required @blur="updateLastname()">

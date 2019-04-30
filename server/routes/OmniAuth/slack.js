@@ -22,13 +22,14 @@ passport.use(new SlackStrategy({
         scope: 'identity.basic identity.email identity.avatar',
         callbackURL: "http://localhost:4000/auth/slack/redirect"
     }, (accessToken, refreshToken, profile, done) => {
+        console.log(profile)
         mongodb.collection('user').findOne({ $or: [{ login: profile.user.displayName }, { email: profile.user.email }, { authSlackId: profile.user.id }] })
             .then(user => {
                 if (user) {
                     if (user.authslackId == profile.id) return done(null, user)
                     else return done(null, null)
                 } else {
-                    mongodb.collection('user').insertOne({ login: 'Slack_' + profile.user.name, email: profile.user.email, password: '', salt: '', lastname: '', firstname: '', lang: 'en', tokenVerif: '', authSlackId: profile.user.id, avatar: profile.user.image_512 }, (err, result) => {
+                    mongodb.collection('user').insertOne({ login: 'slack_' + profile.user.name, email: profile.user.email, password: '', salt: '', lastname: '', firstname: '', lang: 'en', tokenVerif: '', authSlackId: profile.user.id, avatar: profile.user.image_512 }, (err, result) => {
                         if (err) return (null, null)
                         else return done(null, result.ops[0])
                     })

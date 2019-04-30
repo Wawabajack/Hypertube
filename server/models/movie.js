@@ -118,8 +118,7 @@ module.exports.getTrailer = (data) => {
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
             else if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
-            else if (body.status_code === 34) fullfil(data)
-            else if (body.status_code === 25) fullfil(data)
+            else if (body.status_code === 34 || body.status_code === 25) fullfil(data)
             else {
                 let tmp = body.results.filter((elmt) => { return elmt.type === 'Trailer' })
                 tmp.sort((a, b) => { return b.size - a.size });
@@ -136,7 +135,8 @@ module.exports.getTorrentsByYTS = (data) => {
             url: `https://yts.am/api/v2/list_movies.json?query_term=${data.params.movie.imdbID}`
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-            else if (body) {
+            else if (body.search('SQL error') >= 0) fullfil(data)
+            else {
                 let result = JSON.parse(body)
                 if (result.status !== 'ok') reject({ res: data.res, en_error: result.status_message, fr_error: result.status_message })
                 if (result.data.movie_count) data.params.yts_torrents = result.data.movies[0].torrents

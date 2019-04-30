@@ -70,6 +70,7 @@ app.post('/activate', isGuest, (req, res) => {
 app.post('/forgot', isGuest, (req, res) => {
     utils.checkParams(req, res, [ 'email' ])
         .then(user.getUserByEmail)
+        .then(user.checkOauth)
         .then(utils.generateKey)
         .then(user.updateTokenLost)
         .then(utils.sendForgotPassMail)

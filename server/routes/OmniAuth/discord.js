@@ -28,7 +28,7 @@ passport.use(new DiscordStrategy({
                     if (user.authDiscordId == profile.id) return done(null, user)
                     else return done(null, null)
                 } else {
-                    mongodb.collection('user').insertOne({ login: 'Discord_' + profile.username, email: profile.email, password: '', salt: '', lastname: '', firstname: '', lang: 'en', tokenVerif: '', authDiscordId: profile.id, avatar: `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` }, (err, result) => {
+                    mongodb.collection('user').insertOne({ login: 'discord_' + profile.username, email: profile.email, password: '', salt: '', lastname: '', firstname: '', lang: 'en', tokenVerif: '', authDiscordId: profile.id, avatar: `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` }, (err, result) => {
                         if (err) return (null, null)
                         else return done(null, result.ops[0])
                     })

@@ -24,7 +24,6 @@ export default {
 	watch: {
 		'movie' (n) {
 			this.watched = false
-			console.log(this.movie)
 			if (this.userMovies) if (this.userMovies.indexOf(this.movie.id.toString()) >= 0) this.watched = true
 		}
 	},

@@ -64,8 +64,8 @@ app.post('/updateAvatar', upload.single('file'), (req, res) => {
     utils.checkParams(req, res, [ 'avatar' ])
         .then(user.getUserByAuthToken)
         .then(user.updateAvatar)
-        .then(data => { console.log('success'); data.res.send({ success: true, data: data.params }) })
-        .catch(data => { console.log('error'); data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .then(data => { data.res.send({ success: true, data: data.params }) })
+        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**

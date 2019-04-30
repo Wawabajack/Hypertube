@@ -24,7 +24,8 @@
                             </ul>
                         </div>
                         <div class='col-lg-7'>
-                            <img :src='movie.Poster' :alt='movie.Title'>
+                            <img v-if="movie.Poster !== 'N/A'" :src='movie.Poster' :alt='movie.Title'>
+                            <img v-else src="img/notfound.png" :alt='movie.Title'>
                         </div>
                     </div>
                 </div>
@@ -294,6 +295,9 @@ ul {
 }
 .movie-details {
     text-align: center;
+}
+.movie-details img {
+    width: 100%;
 }
 .torrent-container {
     padding-top: 50px;

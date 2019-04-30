@@ -16,12 +16,10 @@ module.exports.checkLogin = (data) => {
 
 module.exports.checkEmail = (data) => {
     return new Promise((fullfil, reject) => {
-        mongodb.collection('user').findOne({ email: data.params.email }, (err, result) => {
+        mongodb.collection('user').findOne({ email: data.params.email.toLowerCase() }, (err, result) => {
             if (result) reject({ res: data.res, en_error: 'This email is already used', fr_error: 'Cet email est déjà utilisé' })
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else fullfil(data)
-            }
+            else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else fullfil(data)
         })
     })
 }
@@ -30,10 +28,8 @@ module.exports.getUserByEmail = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ email: data.params.email }, (err, result) => {
             if (result) { data.params.login = result.login; fullfil(data) }
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'Unknown email', fr_error: 'Email inconnu' })
-            }
+            else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else reject({ res: data.res, en_error: 'Unknown email', fr_error: 'Email inconnu' })
         })
     })
 }
@@ -42,10 +38,8 @@ module.exports.getUserByAuthToken = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ authenticatedToken: data.params.authenticatedToken }, (err, result) => {
             if (result) { data.params.login = result.login; fullfil(data) }
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
-            }
+            else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
         })
     })
 }
@@ -65,10 +59,8 @@ module.exports.checkPassword = (data) => {
                     if (result.tokenVerif !== null) reject({ res: data.res, en_error: 'Your account isn\'t validated', fr_error: 'Vous devez d\'abord valider votre compte' })
                     else fullfil(data)
                 } else reject({ res: data.res, en_error: 'Password doesn\'t match', fr_error: 'Les mots de passes ne correspondent pas' })
-            } else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'Unknown login', fr_error: 'Login inconnu' })
-            }
+            } else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else reject({ res: data.res, en_error: 'Unknown login', fr_error: 'Login inconnu' })
         })
     })
 }
@@ -86,10 +78,8 @@ module.exports.checkTokenVerif = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ tokenVerif: data.params.tokenVerif }, (err, result) => {
             if (result) { data.params.login = result.login; fullfil(data) }
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
-            }
+            else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
         })
     })
 }
@@ -107,10 +97,8 @@ module.exports.checkTokenLost = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ tokenLost: data.params.tokenLost }, (err, result) => {
             if (result) { data.params.login = result.login; fullfil(data) }
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
-            }
+            else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
         })
     })
 }
@@ -128,10 +116,8 @@ module.exports.checkAuthenticatedToken = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ authenticatedToken: data.params.authenticatedToken }, (err, result) => {
             if (result) { data.params.user = result; fullfil(data) }
-            else {
-                if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-                else reject({ res: data.res, en_error: 'You can\'t access to this page without being connected', ft_error: 'Vous ne pouvez pas accéder à cette page sans être connecté' })
-            }
+            else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else reject({ res: data.res, en_error: 'You can\'t access to this page without being connected', ft_error: 'Vous ne pouvez pas accéder à cette page sans être connecté' })
         })
     })
 }
@@ -248,10 +234,7 @@ module.exports.getMovies = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ login: data.params.login }, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else {
-                data.params.movies = result.viewedMovies
-                fullfil(data)
-            }
+            else { data.params.movies = result.viewedMovies; fullfil(data) }
         })
     })
 }
@@ -276,6 +259,16 @@ module.exports.saveMovie = (data) => {
                     else fullfil(data)
                 })
             }
+        })
+    })
+}
+
+module.exports.checkOauth = (data) => {
+    return new Promise((fullfil, reject) => {
+        mongodb.collection('user').findOne({ login: data.params.login }, (err, result) => {
+            if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
+            else if (result && !result.password && !result.salt) reject({ res: data.res, en_error: 'This is an external account', fr_error: 'C\'est un compte externe' }) 
+            else fullfil(data)
         })
     })
 }

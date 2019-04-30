@@ -27,7 +27,7 @@ passport.use(new GithubStrategy({
                     if (user.authGitId == profile.id) return done(null, user)
                     else return done(null, null)
                 } else {
-                    mongodb.collection('user').insertOne({ login: 'Github_' + profile._json.login, email: profile._json.email, password: '', salt: '', lastname: profile._json.name, firstname: '', lang: 'en', tokenVerif: '', authGitId: profile.id, avatar: profile._json.avatar_url }, (err, result) => {
+                    mongodb.collection('user').insertOne({ login: 'github_' + profile._json.login, email: profile._json.email, password: '', salt: '', lastname: profile._json.name, firstname: '', lang: 'en', tokenVerif: '', authGitId: profile.id, avatar: profile._json.avatar_url }, (err, result) => {
                         if (err) return (null, null)
                         else return done(null, result.ops[0])
                     })

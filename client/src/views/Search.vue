@@ -159,6 +159,7 @@ export default {
                 if (result.data.success) {
                     this.fr_error = ''
                     this.en_error = ''
+                    if (this.page === 1) { this.tmp = [], this.movies = [] }
                     result.data.data.movies.forEach(movie => {
                         this.tmp.push(movie)
                         this.movies.push(movie)

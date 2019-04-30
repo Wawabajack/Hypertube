@@ -203,13 +203,13 @@ module.exports.getInfos = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ login: data.params.user }, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else {
+            else if (result) {
                 data.params.avatar = result.avatar
                 data.params.lastname = result.lastname
                 data.params.firstname = result.firstname
                 data.params.lang = result.lang
                 fullfil(data)
-            }
+            } else reject({ res: data.res, en_error: 'No user found', fr_error: 'Aucun utilisateur trouvé' })
         })
     })
 }

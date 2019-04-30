@@ -22,7 +22,6 @@ passport.use(new SlackStrategy({
         scope: 'identity.basic identity.email identity.avatar',
         callbackURL: "http://localhost:4000/auth/slack/redirect"
     }, (accessToken, refreshToken, profile, done) => {
-        console.log(profile)
         mongodb.collection('user').findOne({ $or: [{ login: profile.user.displayName }, { email: profile.user.email }, { authSlackId: profile.user.id }] })
             .then(user => {
                 if (user) {

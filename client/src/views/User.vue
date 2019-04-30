@@ -1,6 +1,6 @@
 <template>
     <div class='user-container container-fluid'>
-        <div class="card offset-md-4 col-md-4">
+        <div class="card offset-md-4 col-md-4" v-if="login">
             <div class="front">
                 <div class="cover">
                     <img src="/img/701909.png"/>
@@ -18,6 +18,7 @@
                 </div>
             </div>
         </div>
+        <div class="error" v-else>{{ $store.state.lang === 'en' ? 'No user found' : 'Aucun utilisateur trouvé' }}</div>
     </div>
 </template>
 
@@ -102,5 +103,11 @@ export default {
     margin: 10px 0 0;
     text-align: center;
     text-transform: capitalize;
+}
+.error {
+    color: white;
+    text-align: center;
+    padding-top: 116px;
+    font-size: x-large;
 }
 </style>

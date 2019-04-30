@@ -149,6 +149,11 @@ export default {
     padding-top: 116px;
     min-height: 600px;
 }
+@media screen and (max-width:400px){
+    .animation .container {
+        display: none;
+    }
+}
 </style>
 
 

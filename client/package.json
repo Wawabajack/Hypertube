@@ -14,6 +14,7 @@
     "node-serialize": "0.0.4",
     "translate": "^1.1.0",
     "video.js": "^5.8.0",
+    "videojs-errors": "^4.2.0",
     "videojs-resolution-switcher": "^0.4.2",
     "videojs-resolution-switcher-v6": "^0.6.0",
     "vue": "^2.5.21",

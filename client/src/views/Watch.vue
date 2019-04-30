@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class='videojs'>
             <div class="video-inner-container" v-show="available">
-                <video id="myPlayer" controls width="640" height="264" class="video-js vjs-fluid vjs-default-skin vjs-big-play-centered" v-if="available">
+                <video id="myPlayer" controls width="640" height="264" class="video-js vjs-live vjs-fluid vjs-default-skin vjs-big-play-centered">
                     <source :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/${this.$route.params.quality}`" type="video/webm" :label="this.$route.params.quality" :res="this.$route.params.quality">
                     <source v-if="this.$route.params.quality !== '240'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/240`" type="video/webm" label="240" res="240">
                     <source v-if="this.$route.params.quality !== '360'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/360`" type="video/webm" label="360" res="360">
@@ -16,7 +16,7 @@
                 <h3 v-else>{{ this.$store.state.lang === 'en' ? err_hash_en : err_hash_fr }}</h3>
             </div>
             <div class="animation" v-if="!available && !(err_hash_fr || err_hash_en || err_quality)">
-                <el-button v-if="percentage >= 0" type="text" icon="el-icon-video-camera-solid" @click="playerInitialize()"></el-button>
+                <el-button v-if="percentage > 0" type="text" icon="el-icon-video-camera-solid" @click="playerInitialize()"></el-button>
                 <el-progress v-if="percentage >= 0" class="percentage" :percentage="percentage" color="lightcoral"></el-progress>
                 <box-loading/>
             </div>
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import "video.js/dist/video-js.css";
+import "video.js/dist/video-js.css"
 import videojs from 'video.js'
 import "videojs-resolution-switcher/lib/videojs-resolution-switcher.css"
 import videoJsResolutionSwitcher from 'videojs-resolution-switcher'
@@ -61,17 +61,15 @@ export default {
     methods: {
         async isAvailable() {
             var result = await this.$store.dispatch('initialize', this)
-            console.log(result)
             if (result) {
                 if (result.data.success) {
-                    this.percentage = result.data.data.percentage
+                    this.percentage = result.data.data.percentage ? result.data.data.percentage : 100
                     this.info = result.data.data.info
                     this.subtitles = this.info.subtitles
                 } else { this.err_hash_en = result.data.en_error; this.err_hash_fr = result.data.fr_error }
             }
         },
         playerInitialize() {
-            this.available = true
             this.player = videojs('myPlayer', {
                 html5: {
                     nativeTextTracks: false
@@ -81,7 +79,8 @@ export default {
                         default: this.$route.params.quality,
                         dynamicLabel: true
                     }
-                }
+                },
+                errorDisplay: false
             })
             if (this.subtitles) {
                 this.subtitles.forEach(subtitle => {
@@ -94,6 +93,10 @@ export default {
                 })
             }
             this.player.ready(() => {
+                this.available = true
+                $(".vjs-live-control").removeClass('vjs-hidden')
+                $(".vjs-progress-control").addClass('vjs-hidden')
+                $(".vjs-remaining-time").addClass('vjs-hidden')
                 $(".vjs-texttrack-settings").css("display","none");
             })
         }
@@ -131,5 +134,13 @@ video {
 .animation button {
     color: lightcoral;
     outline: 0
+}
+@media screen and (max-width:400px){
+    .videojs {
+        padding-top: 200px;
+    }
+    .animation .container {
+        display: none;
+    }
 }
 </style>

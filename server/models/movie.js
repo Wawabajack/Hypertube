@@ -363,21 +363,23 @@ module.exports.getSubtitles = (data) => {
 
 module.exports.getPercentage = (data) => {
     return new Promise((fullfil, reject) => {
-        let tmp = torrent_engine.find(torrent => torrent.hash === data.params.hash)
-        let tmp_engine = tmp.engine
-        let tmp_file = tmp.file
+        if (data.params.info.state !== 'over') {
+            let tmp = torrent_engine.find(torrent => torrent.hash === data.params.hash)
+            let tmp_engine = tmp.engine
+            let tmp_file = tmp.file
 
-        let firstPiece = Math.floor(tmp_file.offset / tmp_engine.torrent.pieceLength)
-        let lastPiece = Math.floor((tmp_file.offset + tmp_file.length - 1) / tmp_engine.torrent.pieceLength)
-        let progress = Array.from(tmp_engine.bitfield.buffer)
-            .map(n => leftpad(n.toString(2), 8, "0"))
-            .join("")
-            .split("")
-            .slice(firstPiece, lastPiece - firstPiece)
-            .filter(bits => bits == 1)
-            .length
-        
-        data.params.percentage = (progress / (lastPiece - firstPiece) * 100).toFixed(2)
-        fullfil(data)
+            let firstPiece = Math.floor(tmp_file.offset / tmp_engine.torrent.pieceLength)
+            let lastPiece = Math.floor((tmp_file.offset + tmp_file.length - 1) / tmp_engine.torrent.pieceLength)
+            let progress = Array.from(tmp_engine.bitfield.buffer)
+                .map(n => leftpad(n.toString(2), 8, "0"))
+                .join("")
+                .split("")
+                .slice(firstPiece, lastPiece - firstPiece)
+                .filter(bits => bits == 1)
+                .length
+            
+            data.params.percentage = (progress / (lastPiece - firstPiece) * 100).toFixed(2)
+            fullfil(data)
+        } else fullfil(data)
     })
 }

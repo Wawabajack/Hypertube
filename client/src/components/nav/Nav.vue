@@ -79,9 +79,6 @@
                 var noaccent = ['A','a','E','e','I','i','O','o','U','u','N','n','C','c'];
                 for (var i = 0; i < accent.length; i++) { str = str.replace(accent[i], noaccent[i]) }	
                 return str
-            },
-            test() {
-                console.log('yo')
             }
 		}
 	}
@@ -217,8 +214,19 @@ span {
     vertical-align:middle
 }
 @media screen and (max-width:400px){
-    .searchBox{
-        display:none
+    .navbar {
+        height: 100px !important;
+    }
+    .nav-search {
+        color: #bebebe;
+        text-align: center;
+        width: 100%;
+    }
+    .nav-icon {
+        margin: 0 auto;
+    }
+    .searchInput input[data-v-1e7cd692] {
+        width: 75px;
     }
 }
 .searchInput {

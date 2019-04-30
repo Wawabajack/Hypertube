@@ -121,6 +121,15 @@ export default {
         width: auto;
     }
 }
+@media screen and (max-width:400px){
+    .animation .container {
+        display: none;
+    }
+    .account-container {
+        padding: 0;
+        padding-top: 116px;
+    }
+}
 h3.title {
     text-align: center;
     padding: 25px;

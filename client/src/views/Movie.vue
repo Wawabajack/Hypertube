@@ -88,7 +88,7 @@
                 </div>
             </div>
             <div class="error" v-if='err'><span>{{ err }}</span></div>
-            <div class="animation" v-if="loading">
+            <div v-if="loading" class="animation">
 				<box-loading/>
 			</div>
         </div>
@@ -502,5 +502,10 @@ p.trailer_err {
     text-align: center;
     padding-top: 116px;
     min-height: 600px;
+}
+@media screen and (max-width:400px){
+    .animation .container {
+        display: none;
+    }
 }
 </style>

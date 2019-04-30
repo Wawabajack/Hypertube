@@ -21,23 +21,18 @@
     <router-link to="/forgotPass" class="login-forget">Password forgotten ?</router-link>
     <ul class="connexion">
       <li>
-        <!-- <a href="https://api.intra.42.fr/oauth/authorize?client_id=01dac0c084ae2a6ac29ee0a880d2769e731682b34478bd75a8849dfd1650f08c&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2F42&response_type=code">42</a> -->
         <a href="http://localhost:4000/auth/fortytwo/">42</a>
       </li>
       <li>
-        <!--    <a href='https://github.com/login/oauth/authorize?client_id=a92145361450ff616ae0'>GITHUB</a> -->
         <a class="fab fa-github" href="http://localhost:4000/auth/github/"></a>
       </li>
       <li>
-          <!--  <a href="https://slack.com/oauth/authorize?client_id=603373723154.603304870643&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2Fslack&response_type=code&scope=identify">Slack</a> -->
         <a class="fab fa-slack" href="http://localhost:4000/auth/slack/"></a>
       </li>
       <li>
-        <!-- <a href="https://id.twitch.tv/oauth2/authorize?client_id=6dyk1rffx2sq6ger9kk7qpa588bbxn&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2Ftwitch&response_type=code">Twitch</a> -->
         <a class="fab fa-twitch" href="http://localhost:4000/auth/twitch/"></a>
       </li>
       <li>
-        <!-- <a href="https://discordapp.com/api/oauth2/authorize?client_id=569901989304205357&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth%2Fdiscord&response_type=code&scope=identify%20email">Discord</a> -->
         <a class="fab fa-discord" href="http://localhost:4000/auth/discord/"></a>
       </li>
       <li>
@@ -139,7 +134,6 @@ export default {
   clear: both;
   margin: 0 auto;
   display: block;
-  /* Text */
   color: #ffffff;
   text-transform: uppercase;
   font-weight: 700;
@@ -156,13 +150,6 @@ export default {
 .button:disabled,
 button[disabled] {
   background-image: #868686;
-}
-.login {
-  position: relative;
-  top: 50vh;
-  -webkit-transform: translateY(-50%);
-  transform: translateY(-50%);
-  min-width: 300px;
 }
 .login-title {
   color: white;
@@ -243,5 +230,14 @@ input::placeholder {
   padding-right: 20px;
   text-decoration: none;
   color: #a3a3a3;
+}
+@media screen and (min-width: 600px) {
+  .login {
+    position: relative;
+    top: 50vh;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    min-width: 300px;
+  }
 }
 </style>

@@ -122,13 +122,6 @@ export default {
 .button:disabled, button[disabled] {
   background-image: #868686;
 }
-.login {
-  position: relative;
-  top: 50vh;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
-  min-width: 300px;
-}
 .login-title {
   color: white;
   font-size: 42px;
@@ -236,6 +229,15 @@ input::placeholder {
   width: 178px;
   height: 178px;
   display: block;
+}
+@media screen and (min-width: 600px) {
+  .login {
+    position: relative;
+    top: 50vh;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    min-width: 300px;
+  }
 }
 </style>
 

@@ -53,6 +53,7 @@ export default {
             lastname: '',
             firstname: '',
             avatar: '',
+            tmp: '',
             oldpassword: '',
             password: '',
             passwordConfirmation: ''
@@ -83,8 +84,8 @@ export default {
             if (result) if (!result.data.success) this.$store.state.lang === 'en' ? this.notify('Error!', result.data.en_error, 'error') : this.notify('Erreur!', result.data.fr_error, 'error')
         },
         async updateAvatar() {
-            this.avatar = this.$refs.file.files[0]
-            var result = await this.$store.dispatch('updateAvatar', this.avatar)
+            this.tmp = this.$refs.file.files[0]
+            var result = await this.$store.dispatch('updateAvatar', this.tmp)
             if (result) if (!result.data.success) this.$store.state.lang === 'en' ? this.notify('Error!', result.data.en_error, 'error') : this.notify('Erreur!', result.data.fr_error, 'error')
         },
         async updateEmail() {

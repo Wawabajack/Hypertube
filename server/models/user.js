@@ -117,7 +117,7 @@ module.exports.checkAuthenticatedToken = (data) => {
         mongodb.collection('user').findOne({ authenticatedToken: data.params.authenticatedToken }, (err, result) => {
             if (result) { data.params.user = result; fullfil(data) }
             else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else reject({ res: data.res, en_error: 'You can\'t access to this page without being connected', ft_error: 'Vous ne pouvez pas accéder à cette page sans être connecté' })
+            else reject({ res: data.res, en_error: 'You can\'t access to this page without being connected', fr_error: 'Vous ne pouvez pas accéder à cette page sans être connecté' })
         })
     })
 }
@@ -245,16 +245,16 @@ module.exports.saveMovie = (data) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
             else if (result.viewedMovies) {
                 var viewedMovies = result.viewedMovies
-                if (viewedMovies.findIndex( movie => { return movie === data.params.tmpId }) >= 0) fullfil(data)
+                if (viewedMovies.findIndex( movie => { return movie === data.params.movieId }) >= 0) fullfil(data)
                 else {
-                    viewedMovies.push(data.params.tmpId)
+                    viewedMovies.push(data.params.movieId)
                     mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { viewedMovies: viewedMovies }}, (err, result) => {
                         if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                         else fullfil(data)
                     })
                 }
             } else {
-                mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { viewedMovies: [ data.params.tmpId ] }}, (err, result) => {
+                mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { viewedMovies: [ data.params.movieId ] }}, (err, result) => {
                     if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
                     else fullfil(data)
                 })

@@ -27,10 +27,14 @@
     },
     async created() {
       if (localStorage.getItem('authenticatedToken')) {
-        this.$store.state.session = this.$session.get('user');
-        this.$store.state.lang = this.$session.get('lang')
         var result = await this.$store.dispatch('getLogin')
-        if (result) if (result.data.success) this.$store.state.session = result.data.data.login
+        if (result) {
+          if (result.data.success) {
+            this.$store.state.session = result.data.data.login
+            this.$store.state.session = this.$session.get('user');
+            this.$store.state.lang = this.$session.get('lang')
+          }
+        }
       }
     },
     async updated() {

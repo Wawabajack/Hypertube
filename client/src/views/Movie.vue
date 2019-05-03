@@ -142,16 +142,9 @@ export default {
     },
     async beforeCreate() {
         if (!this.$store.state.session) this.$router.push({ name: 'login' })
+        else if (!this.$route.query.id) this.$router.push({ name: 'home' })
         else {
-            if (this.$route.query.id && this.$route.query.tmp) {
-                if (this.$route.query.release) this.$router.push({ name: 'home' })
-                this.id = this.$route.query.id; this.tmpId = this.$route.query.tmp
-            } else if (this.$route.query.name && this.$route.query.tmp) { 
-                if (!this.$route.query.release) this.$router.push({ name: 'home' })
-                this.title = this.$route.query.name
-                this.tmpId = this.$route.query.tmp
-                this.release = this.$route.query.release
-            } else this.$router.push({ name: 'home' })
+            this.id = this.$route.query.id
             var result = await this.$store.dispatch('movie', this)
             if (result) {
                 this.loading = false
@@ -161,8 +154,8 @@ export default {
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
                     this.trailer = result.data.data.trailer
-                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 10 && torrent.quality !== '3D' })
-                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 10 && torrent.category.split('/').pop() !== '3D' })
+                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 3 && torrent.quality !== '3D' })
+                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 3 && torrent.category.split('/').pop() !== '3D' })
                     if (!result.data.data.yts_torrents && !result.data.data.rarbg_torrents) this.err = this.$store.state.lang === 'en' ? 'No torrents found for this movie, sorry..' : 'Aucun torrent n\'a été trouvé pour ce film, désolé..'
                     else this.getTorrent = true
                     if (result.data.data.tmpId) this.tmpId = result.data.data.tmpId
@@ -182,15 +175,15 @@ export default {
             this.torrent.hash = src === 'yts' ? torrent.hash : torrent.download.split('magnet:?xt=urn:btih:')[1].split('&')[0]
             this.torrent.nquality = src === 'yts' ? torrent.quality.split('p')[0] : torrent.category.split('/').pop()
             this.torrent.nsize = src === 'yts' ? torrent.size_bytes : torrent.size
+            var download = '.download-' + src + index
+            var loading = '.loading-' + src + index
+            var view = '.view-' + src + index
+            $(download).hide()
+            $(loading).show()
             var result = await this.$store.dispatch('download', this)
             if (result) {
                 if (result.data.success) {
-                    var download = '.download-' + src + index
-                    var loading = '.loading-' + src + index
-                    var view = '.view-' + src + index
-                    $(download).hide()
-                    $(loading).show()
-                    setTimeout(() => { $(loading).hide(); $(view).show() }, 20000)
+                    setTimeout(() => { $(loading).hide(); $(view).show() }, 10000)
                     if (src === 'yts') { this.yts_torrents[index].torrentFilename = result.data.data.torrentFilename; this.yts_torrents[index].torrentPath = result.data.data.torrentPath }
                     else { this.rarbg_torrents[index].torrentFilename = result.data.data.torrentFilename; this.rarbg_torrents[index].torrentPath = result.data.data.torrentPath }
                 }

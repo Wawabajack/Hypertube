@@ -76,7 +76,7 @@ export default {
     }
   },
   created() {
-		if (this.$route.query.loggin && this.$route.query.key) this.logingit()
+    if (this.$route.query.loggin && this.$route.query.key) this.logingit()
     if (this.$route.query.error == 1) {
       this.notify( "Error!", "Mail or Login already used", "error" )
       this.$router.push({ name: "home" })

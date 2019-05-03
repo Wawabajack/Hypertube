@@ -15,13 +15,9 @@ const OS = require('opensubtitles-api')
 const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
 const leftpad = require('left-pad')
 
-
 module.exports.getTopTorrents = (data) => {
     return new Promise((fullfil, reject) => {
-        const options = {
-            category: rarbgApi.CATEGORY.MOVIES,
-            sort: 'last'
-        }
+        const options = { category: rarbgApi.CATEGORY.MOVIES, sort: 'last' }
         rarbgApi.list(options)
             .then(result => {
                 data.params.lastTorrents = result
@@ -40,62 +36,151 @@ module.exports.getTopTorrents = (data) => {
     })
 }
 
-module.exports.getSearchedMovies = (data) => {
+
+module.exports.getInfoLast_Torrents = (data) => {
+	return new Promise((fullfil, reject) => {
+		let index = 0
+		data.params.lastTorrents_infos = []
+		data.params.lastTorrents.forEach(torrent => {
+			if (torrent.episode_info && torrent.episode_info.imdb) {
+				request.get({
+					url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${torrent.episode_info.imdb}`,
+					json: true
+				}, (error, response, body) => {
+					if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+					else if (body.Response === 'True') {
+						data.params.lastTorrents_infos.push(body)
+						if (index++ === 24) fullfil(data)
+					} else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
+				})
+			} else if (index++ === 24) fullfil(data)
+		})
+	})
+}
+
+module.exports.getInfoSeeders_Torrents = (data) => {
+	return new Promise((fullfil, reject) => {
+		index = 0
+		data.params.seedersTorrents_infos = []
+		data.params.seedersTorrents.forEach(torrent => {
+			if (torrent.episode_info && torrent.episode_info.imdb) {
+				request.get({
+					url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${torrent.episode_info.imdb}`,
+					json: true
+				}, (error, response, body) => {
+					if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+					else if (body.Response === 'True') {
+						data.params.seedersTorrents_infos.push(body)
+						if (index++ === 24) fullfil(data)
+					} else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
+				})
+			} else if (index++ === 24) fullfil(data)
+		})
+	})
+}
+
+module.exports.getInfoLeechers_Torrents = (data) => {
+	return new Promise((fullfil, reject) => {
+		index = 0
+		data.params.leechersTorrents_infos = []
+		data.params.leechersTorrents.forEach(torrent => {
+			if (torrent.episode_info && torrent.episode_info.imdb) {
+				request.get({
+					url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${torrent.episode_info.imdb}`,
+					json: true
+				}, (error, response, body) => {
+					if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+					else if (body.Response === 'True') {
+						data.params.leechersTorrents_infos.push(body)
+						if (index++ === 24) fullfil(data)
+					} else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
+				})
+			} else if (index++ === 24) fullfil(data)
+		})
+	})
+}
+
+module.exports.getSearchedMoviesByRarbg = (data) => {
     return new Promise((fullfil, reject) => {
-        let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
+        let limit = data.params.page === 1 ? 25 : data.params.page === 2 ? 50 : 100
+        let options = { category: rarbgApi.CATEGORY.MOVIES, limit: limit }
+        data.params.movies = []
+        rarbgApi.search(data.params.search, options)
+            .then(results => {
+                let index = 0
+                let cache = {}
+                let tmp = results.filter(element => { if (element.episode_info) return cache[element.episode_info.imdb] ? 0 : cache[element.episode_info.imdb] = 1 })
+                tmp.forEach(elt => {
+                    data.params.movies.push(elt.episode_info.imdb)
+                    if (index++ === tmp.length - 1) fullfil(data)
+                })
+            })
+            .catch(err => {
+                if (err.error_code === 10 || err.error_code === 20) fullfil(data)
+                else reject({ res: data.res, en_error: err, fr_error: err })
+            })
+    })
+}
+
+module.exports.getSearchedMoviesByYts = (data) => {
+    return new Promise((fullfil, reject) => {
         request.get({
-            url: `https://api.themoviedb.org/3/search/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=${lang}&query=${data.params.search}&page=${data.params.page}&include_adult=false`,
-            json: true
+            url: `https://yts.am/api/v2/list_movies.json?query_term=${data.params.search}&page=${data.params.page}`
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+            else if (body.search('SQL error') >= 0) fullfil(data)
             else {
-                if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
-                if (!body.total_results) reject({ res: data.res, en_error: '0 movies found', fr_error: 'Aucun film n\'a été trouvé' })
-                else { data.params.movies = body.results; fullfil(data) }
+                try {
+                    let result = JSON.parse(body)
+                    if (result.status !== 'ok') reject({ res: data.res, en_error: result.status_message, fr_error: result.status_message })
+                    if (result.data.movie_count) {
+                        if (result.data.movies) {
+                            let index = 0
+                            result.data.movies.forEach(movie => {
+                                if (data.params.movies.findIndex(imdbID => { return imdbID === movie.imdb_code }) < 0) data.params.movies.push(movie.imdb_code)
+                                if (index++ === result.data.movies.length - 1) fullfil(data)
+                            })
+                        }
+                    }
+                    fullfil(data)
+                } catch (err) {
+                    reject({ res: data.res, en_error: 'Wrong input', fr_error: 'Recherche invalide' })
+                }
             }
         })
     })
 }
 
-module.exports.getRecommandedMovies = (data) => {
+module.exports.getInfosSearchedMovies = (data) => {
     return new Promise((fullfil, reject) => {
-        let lang = data.params.lang === 'en' ? 'en-US' : 'fr-FR'
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=fcddca7f1ed48a172cfd4673adf01e53&language=${lang}&sort_by=vote_average.desc&include_adult=false&include_video=false&page=${data.params.page}&release_date.gte=${data.params.release_date_min}&release_date.lte=${data.params.release_date_max}&vote_average.gte=${data.params.vote_average[0]}&vote_average.lte=${data.params.vote_average[1]}&with_original_language=en`
-        url += data.params.with_genres === '-1' ? '' : `&with_genres=${data.params.with_genres}`
-        request.get({
-            url: url,
-            json: true
-        }, (error, response, body) => {
-            if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-            else {
-                if (body.error) reject({ res: data.res, en_error: body.status_message, fr_error: body.status_message })
-                if (!body.total_results) reject({ res: data.res, en_error: '0 movies found', fr_error: 'Aucun film n\'a été trouvé' })
-                else { data.params.movies = body.results; fullfil(data) }
-            }
-        })
+        if (data.params.movies && data.params.movies.length > 0) {
+            index = 0
+            data.params.movies_infos = []
+            data.params.movies.forEach(imdbID => {
+                request.get({
+                    url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${imdbID}`,
+                    json: true
+                }, (error, response, body) => {
+                    if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+                    else if (body.Response === 'True') {
+                        data.params.movies_infos.push(body)
+                        if (index++ === data.params.movies.length - 1) fullfil(data)
+                    } else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
+                })
+            })  
+        } else fullfil(data)
     })
 }
 
 module.exports.getMovie = (data) => {
     return new Promise((fullfil, reject) => {
-        let param = data.params.movieTitle ? `&t=${data.params.movieTitle}&y=${data.params.release}` : `&i=${data.params.movieId}`
         request.get({
-            url: `http://www.omdbapi.com/?apikey=4402369e&plot=full${param}`,
+            url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${data.params.movieId}`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
             else if (body.Response === 'True') { data.params.movie = body; fullfil(data) }
-            else if (data.params.movieTitle) {
-                let param = `&t=${data.params.movieTitle}`
-                request.get({
-                    url: `http://www.omdbapi.com/?apikey=4402369e&plot=full${param}`,
-                    json: true
-                }, (error, response, body) => {
-                    if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-                    else if (body.Response === 'True') { data.params.movie = body; fullfil(data) }
-                    else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
-                })
-            } else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
+            else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..'})
         })
     })
 }
@@ -164,7 +249,7 @@ module.exports.downloadTorrent = (data) => {
         engine.on('ready', () => {
             let index = engine.files.indexOf(engine.files.reduce((a, b) => (a.length > b.length ? a : b)))
             engine.files.forEach((file, ind) => {
-                if (ind === index) { file.select(); console.log(`Chosen file: ${file.name}`) } 
+                if (ind === index) { file.select(); console.info(`Chosen file: ${file.name}`) } 
                 else file.deselect()
             })
             data.params.file = engine.files[index]

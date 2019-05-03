@@ -16,8 +16,11 @@ const fs = require('fs')
 app.post('/', isUser, (req, res) => {
     utils.checkParams(req, res, [])
         .then(torrent.getTopTorrents)
+        .then(torrent.getInfoLast_Torrents)
+        .then(torrent.getInfoSeeders_Torrents)
+        .then(torrent.getInfoLeechers_Torrents)
         .then(data => { data.res.send({ success: true, data: data.params }) })
-        .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+        .catch(data => { mdata.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
 
 /**
@@ -30,7 +33,9 @@ app.post('/', isUser, (req, res) => {
  */
 app.post('/search', isUser, (req, res) => {
     utils.checkParams(req, res, [ 'search', 'page', 'lang' ])
-        .then(torrent.getSearchedMovies)
+        .then(torrent.getSearchedMoviesByRarbg)
+        .then(torrent.getSearchedMoviesByYts)
+        .then(torrent.getInfosSearchedMovies)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
@@ -52,10 +57,10 @@ app.post('/discover', isUser, (req, res) => {
 
 /**
  * Retrieve differents informations for the movie
- *      ---> `data` : { `authenticatedToken`, `movieTitle`, `movieId` }
+ *      ---> `data` : { `authenticatedToken`, `movieId` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> check if `movieTitle` or `movieId`exists and are well-formated {{ utils::checkParams }}
- *          ---> get all movie's informations via imdb thanks to `movieTitle` or `movieId` {{ torrent::getMovie }}
+ *          ---> check if `movieId`exists and are well-formated {{ utils::checkParams }}
+ *          ---> get all movie's informations via imdb thanks to `movieId` {{ torrent::getMovie }}
  *          ---> get list of torrents already downloaded {{ torrent::getDownloadedTorrents }}
  *          ---> get trailer's movie {{ torrent::getTrailer }}
  *          ---> get movieTorrents {{ torrent::getTorrentsByYTS }}
@@ -63,7 +68,7 @@ app.post('/discover', isUser, (req, res) => {
  *          -----> error handling
  */
 app.post('/movie', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieTitle', 'movieId', 'tmpId', 'release' ])
+    utils.checkParams(req, res, [ 'movieId' ])
         .then(torrent.getMovie)
         .then(torrent.getDownloadedTorrents)
         .then(torrent.getTrailer)
@@ -94,15 +99,15 @@ app.post('/download', isUser, (req, res) => {
 
 /**
  * Save the movie into user's collection ('watchedMovie' variable) && update the movie into movies's collection ('lastSeen' variable)
- *      ---> `data` : { `authenticatedToken`, `movieId`, `torrent`, `tmpId` }
+ *      ---> `data` : { `authenticatedToken`, `movieId`, `torrent` }
  *          ---> use a middleware to see if `authenticatedToken` exist and match an user {{ isUser }}
- *          ---> check if `torrent` && `movieId` && `tmpId` exists and are well-formated {{ utils::checkParams }}
+ *          ---> check if `torrent` && `movieId` exists and are well-formated {{ utils::checkParams }}
  *          ---> save movies into user's collection {{ user::saveMovie }}
  *          ---> update torrent into movie's collection {{ torrent::saveTorrent }}
  *          -----> error handling
  */
 app.post('/watch', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'movieId', 'torrent', 'tmpId' ])
+    utils.checkParams(req, res, [ 'movieId', 'torrent' ])
         .then(user.saveMovie)
         .then(torrent.saveTorrent)
         .then(data => { data.res.send({ success: true, data: data.params }) })
@@ -139,7 +144,6 @@ app.get('/convert/:hash/:quality', (req, res) => {
         .then(torrent.convert)
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
 })
-
 
 /**
  * Pipe a flux

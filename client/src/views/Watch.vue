@@ -52,8 +52,10 @@ export default {
         else if (!this.$route.params.quality || !this.$route.params.hash) this.$router.push({ name: 'login' })
     },
     created() {
-        if (this.$route.params.quality !== '240' && this.$route.params.quality !== '360' && this.$route.params.quality !== '480' && this.$route.params.quality !== '720' && this.$route.params.quality !== '1080') this.err_quality = this.$store.state.lang === 'en' ? 'This quality isn\'t available' : 'Cette qualité n\'est pas disponible'
-        else setInterval(vue => { if (!vue.available) vue.isAvailable() }, 5000, this)
+        if (this.$store.state.session) {
+            if (this.$route.params.quality !== '240' && this.$route.params.quality !== '360' && this.$route.params.quality !== '480' && this.$route.params.quality !== '720' && this.$route.params.quality !== '1080') this.err_quality = this.$store.state.lang === 'en' ? 'This quality isn\'t available' : 'Cette qualité n\'est pas disponible'
+            else setInterval(vue => { if (!vue.available) vue.isAvailable() }, 5000, this)
+        }
     },
     beforeDestroy() {
         if (this.player) this.player.dispose()
@@ -67,7 +69,7 @@ export default {
                     this.info = result.data.data.info
                     this.subtitles = this.info.subtitles
                 } else { this.err_hash_en = result.data.en_error; this.err_hash_fr = result.data.fr_error }
-            }
+            } else { this.err_hash_en = 'An error occured, please try again'; this.err_hash_fr = 'Nous rencontrons une erreur, veuillez réessayer' }
         },
         playerInitialize() {
             this.player = videojs('myPlayer', {

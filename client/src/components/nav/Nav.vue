@@ -9,9 +9,9 @@
                     <div class="nav-element">
                         <div class="searchBox">
                             <button class="searchTab" tabindex="0" aria-label="Search" @click="collapse()" v-show='isCollapsed'><i class="icon el-icon-search" :class="{active: active === 'search'}"></i></button>
-                            <div class="searchInput" v-if='!isCollapsed'>
-                                <i style="color:lightcoral" class="icon el-icon-search"></i>
-                                <input autofocus type="search" placeholder="title..." maxlength="80" v-model="search" @blur="collapse()">
+                            <div class="searchInput" v-if='!isCollapsed' @blur="collapse()">
+                                <i style="color:lightcoral" class="icon el-icon-search" @click="searching()"></i>
+                                <input type="search" placeholder="title..." maxlength="80" v-model="search">
                             </div>
                         </div>
                     </div>
@@ -52,15 +52,15 @@
                     this.$store.state.search = to.query.q
                     this.search = to.query.q
                 }
-			},
-			'search' (n, o) {
-                this.$store.state.search = this.sansAccent(this.search)
-                this.search ? this.$router.push({name: 'search', query: { q: this.sansAccent(this.search) }}) : this.$router.push({name: 'search' })
-			},
+			}
 		},
 		methods: {
             collapse() {
                 this.isCollapsed = !this.isCollapsed
+            },
+            searching() {
+                this.$store.state.search = this.sansAccent(this.search)
+                this.search ? this.$router.push({name: 'search', query: { q: this.sansAccent(this.search) }}) : this.$router.push({name: 'search' })
             },
             async changeLang(lang) {
                 this.lang = lang
@@ -68,13 +68,13 @@
             },
             sansAccent (str) {
                 var accent = [
-                        /[\300-\306]/g, /[\340-\346]/g, // A, a
-                        /[\310-\313]/g, /[\350-\353]/g, // E, e
-                        /[\314-\317]/g, /[\354-\357]/g, // I, i
-                        /[\322-\330]/g, /[\362-\370]/g, // O, o
-                        /[\331-\334]/g, /[\371-\374]/g, // U, u
-                        /[\321]/g, /[\361]/g, // N, n
-                        /[\307]/g, /[\347]/g, // C, c
+                        /[\300-\306]/g, /[\340-\346]/g,
+                        /[\310-\313]/g, /[\350-\353]/g,
+                        /[\314-\317]/g, /[\354-\357]/g,
+                        /[\322-\330]/g, /[\362-\370]/g,
+                        /[\331-\334]/g, /[\371-\374]/g,
+                        /[\321]/g, /[\361]/g,
+                        /[\307]/g, /[\347]/g,
                 ]
                 var noaccent = ['A','a','E','e','I','i','O','o','U','u','N','n','C','c'];
                 for (var i = 0; i < accent.length; i++) { str = str.replace(accent[i], noaccent[i]) }	

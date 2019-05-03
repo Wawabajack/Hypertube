@@ -28,17 +28,17 @@ app.use('/msg', msg)
 
 setInterval(() => {
     mongodb.collection('movies').find().toArray((err, result) => {
-        if (err) console.log('An error occured with the database')
+        if (err) console.error('An error occured with the database')
         else if (result) {
             result.forEach(element => {
                 var date = ((new Date().getTime() / 86400000) - (new Date(element.lastSeen).getTime() / 86400000)).toFixed(0)
                 if (date >= 30) {
                     rimraf(`../client/public/movies/${element.path}`, (err) => {
-                        if (err) console.log(err)
+                        if (err) console.error(err)
                         else {
                             mongodb.collection('movies').deleteOne({ magnet: element.magnet }, (err, result) => {
-                                if (err) console.log('An error occured with the database')
-                                else console.log('Dossier' + element.path + 'supprimé.')
+                                if (err) console.error('An error occured with the database')
+                                else console.error('Dossier' + element.path + 'supprimé.')
                             })
                         }
                     })
@@ -48,4 +48,4 @@ setInterval(() => {
     })
 }, 86400000)
 
-app.listen(4000, () => { console.log('Hypertube server online on port:', 4000) })
+app.listen(4000, () => { console.info('Hypertube server online on port:', 4000) })

@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid">
         <div class="row sort">
-            <div class="offset-md-1 col-md-4 sort-options">
+            <div class="sort-options">
                 <h3>{{ $store.state.lang === 'en' ? 'Sorted by' : 'Trié par' }}</h3>
                 <p>{{ $store.state.lang === 'en' ? 'Title' : 'Titre' }}</p>
                 <el-radio-group v-model="title" size="mini" :disabled="sort_vote_average != 'Aucun' || sort_release_date != 'Aucun'">
@@ -22,42 +22,11 @@
                     <el-radio-button label="Croissant">{{ $store.state.lang === 'en' ? 'Ascending' : 'Croissant' }}</el-radio-button>
                 </el-radio-group>
             </div>
-            <div class="col-md-6 sort-request">
-                <h3>{{ $store.state.lang === 'en' ? 'Request By' : 'Films par'}}</h3>
-                <p>Genre</p>
-                <el-radio-group v-model="genre" size="mini" :disabled="isSearch">
-                    <el-radio-button label="-1">{{ $store.state.lang === 'en' ? 'All' : 'Tous' }}</el-radio-button>
-                    <el-radio-button label="28">Action</el-radio-button>
-                    <el-radio-button label="12">{{ $store.state.lang === 'en' ? 'Adventure' : 'Aventure' }}</el-radio-button>
-                    <el-radio-button label="16">Animation</el-radio-button>
-                    <el-radio-button label="35">{{ $store.state.lang === 'en' ? 'Comedy' : 'Comédie' }}</el-radio-button>
-                    <el-radio-button label="80">Crime</el-radio-button>
-                    <el-radio-button label="99">{{ $store.state.lang === 'en' ? 'Documentary' : 'Documentaire' }}</el-radio-button>
-                    <el-radio-button label="18">{{ $store.state.lang === 'en' ? 'Drama' : 'Drame' }}</el-radio-button>
-                    <el-radio-button label="10751">{{ $store.state.lang === 'en' ? 'Family' : 'Famille' }}</el-radio-button>
-                    <el-radio-button label="14">{{ $store.state.lang === 'en' ? 'Fantasy' : 'Fantastique' }}</el-radio-button>
-                    <el-radio-button label="27">{{ $store.state.lang === 'en' ? 'Horror' : 'Horreur' }}</el-radio-button>
-                    <el-radio-button label="10749">Romance</el-radio-button>
-                    <el-radio-button label="878">Science Fiction</el-radio-button>
-                    <el-radio-button label="53">Thriller</el-radio-button>
-                    <el-radio-button label="10752">{{ $store.state.lang === 'en' ? 'War' : 'Guerre' }}</el-radio-button>
-                    <el-radio-button label="37">Western</el-radio-button>
-                </el-radio-group>
-                <p>{{ $store.state.lang === 'en' ? 'Popularity' : 'Popularité' }}</p>
-                <el-slider
-                v-model="disc_vote_average"
-                range
-                :max="10" :disabled="isSearch">
-                </el-slider>
-                <p>{{ $store.state.lang === 'en' ? 'Release date' : 'Date de sortie' }}</p>
-                <el-input-number size="mini" v-model="disc_release_date_min" :min="1950" :max="disc_release_date_max" @change="reset_andGetRcmdd()" :disabled="isSearch"></el-input-number>
-                <el-input-number size="mini" v-model="disc_release_date_max" :min="disc_release_date_min" :max="2019" @change="reset_andGetRcmdd()" :disabled="isSearch"></el-input-number>
-            </div>
         </div>
         <div class="searchedMovies" v-if="!fr_error && !en_error">
             <ul class="search-container list-searchedMovies" >
                 <li class="item-searchedMovie" v-for="(movie, index) in movies" :key="`movie-${index}`">
-                    <box-search :movie="movie" :userMovies="userMovies"/>
+                    <box-figure :movie="movie" :userMovies="userMovies"/>
                 </li>
             </ul>
         </div>
@@ -68,11 +37,11 @@
 </template>
 
 <script>
-import BoxSearch from '@/components/BoxSearch.vue'
+import BoxFigure from '@/components/BoxFigure.vue'
 
 export default {
     components: {
-        BoxSearch
+        BoxFigure
     },
     data() {
         return {
@@ -103,39 +72,23 @@ export default {
             this.page = 1
             this.movies = []
             this.tmp = []
-            this.$store.state.search ? this.isSearch = true : this.isSearch = false
-            this.isSearch ? this.searchMovies() : this.recommandedMovies()
-        },
-        '$store.state.lang' (n, o) {
-            this.page = 1
-            this.movies = []
-            this.tmp = []
-            this.isSearch ? this.searchMovies() : this.recommandedMovies()
+            this.isSearch = this.$store.state.search ? true : false
+            this.isSearch ? this.searchMovies() : ''
         },
         title() {
-            if (this.title === 'Décroissant') this.movies.sort((a,b) => { return (a.title > b.title) ? 1 : ((b.title > a.title) ? -1 : 0) })
-            else if (this.title === 'Croissant') this.movies.sort((a, b) => { return (a.title > b.title) ? -1 : ((b.title > a.title) ? 1 : 0) })
+            if (this.title === 'Décroissant') this.movies.sort((a,b) => { return (a.Title > b.Title) ? 1 : ((b.Title > a.Title) ? -1 : 0) })
+            else if (this.title === 'Croissant') this.movies.sort((a, b) => { return (a.Title > b.Title) ? -1 : ((b.Title > a.Title) ? 1 : 0) })
             else this.movies = this.tmp.slice(0)
         },
         sort_vote_average() {
-            if (this.sort_vote_average === 'Décroissant') this.movies.sort((a, b) => { return b.vote_average - a.vote_average })
-            else if (this.sort_vote_average === 'Croissant') this.movies.sort((a, b) => { return a.vote_average - b.vote_average })
+            if (this.sort_vote_average === 'Décroissant') this.movies.sort((a, b) => { return b.imdbRating - a.imdbRating })
+            else if (this.sort_vote_average === 'Croissant') this.movies.sort((a, b) => { return a.imdbRating - b.imdbRating })
             else this.movies = this.tmp.slice(0)
         },
         sort_release_date() {
-            if (this.sort_release_date === 'Décroissant') this.movies.sort((a, b) => { var d1 = new Date(b.release_date).getTime(); var d2 = new Date(a.release_date).getTime(); return d1 - d2 })
-            else if (this.sort_release_date === 'Croissant') this.movies.sort((a, b) => { var d1 = new Date(b.release_date).getTime(); var d2 = new Date(a.release_date).getTime(); return d2 - d1 })
+            if (this.sort_release_date === 'Décroissant') this.movies.sort((a, b) => { var d1 = new Date(b.Year).getTime(); var d2 = new Date(a.Year).getTime(); return d1 - d2 })
+            else if (this.sort_release_date === 'Croissant') this.movies.sort((a, b) => { var d1 = new Date(b.Year).getTime(); var d2 = new Date(a.Year).getTime(); return d2 - d1 })
             else this.movies = this.tmp.slice(0)
-        },
-        genre() {
-            this.reset_andGetRcmdd()
-        },
-        language() {
-            this.reset_andGetRcmdd()
-        },
-        disc_vote_average() {
-            if (this.index >= 2) this.reset_andGetRcmdd()
-            this.index++
         }
 	},
     beforeCreate() {
@@ -144,10 +97,12 @@ export default {
         else this.$router.push({name: 'search'})
     },
     created() {
-        this.getUser()
-        if (this.$route.query && this.$route.query.q) this.$store.state.search = this.$route.query.q
-        this.$store.state.search ? this.searchMovies() : this.reset_andGetRcmdd()
-        this.$store.state.search ? this.isSearch = true : this.isSearch = false
+        if (this.$store.state.session) {
+            this.getUser()
+            if (this.$route.query && this.$route.query.q) this.$store.state.search = this.$route.query.q
+            this.$store.state.search ? this.searchMovies() : ''
+            this.isSearch = this.$store.state.search ? true : false
+        }
     },
     mounted() {
         this.scroll()
@@ -159,42 +114,25 @@ export default {
                 if (result.data.success) {
                     this.fr_error = ''
                     this.en_error = ''
-                    if (this.page === 1) { this.tmp = [], this.movies = [] }
-                    result.data.data.movies.forEach(movie => {
-                        this.tmp.push(movie)
-                        this.movies.push(movie)
-                    });
+                    if (this.page === 1) { this.tmp = []; this.movies = [] }
+                    if (result.data.data.movies_infos) { 
+                        result.data.data.movies_infos.forEach(movie => {
+                            this.tmp.push(movie)
+                            this.movies.push(movie)
+                        })
+                        let cache = {}
+                        this.movies = this.movies.filter(element => { return cache[element.imdbID] ? 0 : cache[element.imdbID] = 1 })
+                    } else { this.fr_error = 'Aucun torrent pour ce film..'; this.en_error = 'No torrent for this movie..' }
                 } else {
                     this.fr_error = result.data.fr_error
                     this.en_error = result.data.en_error
                 }
             }
-        },
-        async recommandedMovies() {
-            var result = await this.$store.dispatch('discover', this)
-            if (result) {
-                if (result.data.success) {
-                    this.fr_error = ''
-                    this.en_error = ''
-                    result.data.data.movies.forEach(movie => {
-                        this.tmp.push(movie)
-                        this.movies.push(movie)
-                    });
-                } else {
-                    this.en_error = result.data.en_error
-                    this.fr_error = result.data.fr_error
-                }
-            }
-        },
-        reset_andGetRcmdd() {
-            this.tmp = []
-            this.movies = []
-            this.recommandedMovies()
         },
         scroll() {
             window.onscroll = () => {
                 let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-                if (bottomOfWindow) { this.page++; this.$store.state.search ? this.searchMovies() : this.recommandedMovies() }
+                if (bottomOfWindow) if (++this.page <= 3) this.searchMovies()
             };
         },
         async getUser() {
@@ -266,5 +204,8 @@ export default {
     color: white;
     text-align: center;
     margin-top: 116px;
+}
+.sort-options {
+    margin: auto;
 }
 </style>

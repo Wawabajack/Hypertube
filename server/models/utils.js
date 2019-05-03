@@ -6,10 +6,7 @@ const transporter = nodemailer.createTransport({ service: 'Gmail', auth: { user:
 module.exports.checkParams = (req, res, params) => {
     return new Promise((fullfil, reject) => {
         params.forEach(param => {
-            if (param === 'movieTitle' && !req.body[param] && req.body['movieId']) {}
-            else if (param === 'movieId' && !req.body[param] && req.body['movieTitle']) {}
-            else if (param === 'release' && !req.body[param] && req.body['movieId']) {}
-            else if (!req.body[param]) reject({ res: res, en_error: 'Fields missing', fr_error: 'Vous n\'avez pas fourni toutes les informations nécessaires' })
+            if (!req.body[param]) reject({ res: res, en_error: 'Fields missing', fr_error: 'Vous n\'avez pas fourni toutes les informations nécessaires' })
             else {
                 if (param === 'login') {
                     var regex = /^([a-zA-Z0-9-_. ]){6,20}$/
@@ -41,10 +38,7 @@ module.exports.checkParams = (req, res, params) => {
                 else if (param === 'page') {
                     var regex = /^(1|[0-9]{0,2})$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Unavailable page', fr_error: 'Page indisponible/invalide' }) }
-                else if (param === 'release') {
-                    var regex = /^(19[0-9][0-9]|20[0-1][0-9])$/
-                    if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Release date incorrect', fr_error: 'La date de sortie est erroné' })
-                } else if (param === 'hash') {
+                else if (param === 'hash') {
                     var regex = /^([a-zA-Z0-9]){40}$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Torrent\'s magnet isn\'t well formated', fr_error: 'Le magnet du torrent n\'est pas correctement formaté'})
                 }

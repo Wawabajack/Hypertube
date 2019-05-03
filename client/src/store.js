@@ -36,7 +36,7 @@ const actions = {
           }
           fullfil(result) 
         })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   logingit: (store, vue) => {
@@ -53,7 +53,7 @@ const actions = {
           }
           fullfil(result) 
         })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   loginOauth: (store, vue) => {
@@ -70,7 +70,7 @@ const actions = {
           }
           fullfil(result) 
         })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   getLogin: (store) => {
@@ -78,7 +78,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   register: (store, user) => {
@@ -95,7 +95,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, formData, { headers: { 'Content-Type' : 'multipart/form-data' }})
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   activate: (store, token) => {
@@ -103,7 +103,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { tokenVerif: token, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   forgotPass: (store, email) => {
@@ -111,7 +111,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { email: email, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   reset: (store, vue) => {
@@ -119,7 +119,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { tokenLost: vue.$route.params.token, password: vue.password, passwordConfirmation: vue.passwordConfirmation, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   disconnect: (store, vue) => {
@@ -130,12 +130,13 @@ const actions = {
   },
 
 
+
   recommanded: (store, vue) => {
     let uri = `http://${ip}/torrent/`
     return new Promise((fullfil, reject) => {
       axios.post(uri, { authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   search: (store, vue) => {
@@ -143,7 +144,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { search: store.state.search, page: vue.page, lang: store.state.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   discover: (store, vue) => {
@@ -151,7 +152,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { with_genres: vue.genre, with_original_language: vue.language, vote_average: vue.disc_vote_average, release_date_min: vue.disc_release_date_min, release_date_max: vue.disc_release_date_max, page: vue.page, lang: store.state.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   movie: (store, vue) => {
@@ -159,7 +160,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { movieTitle: vue.title, movieId: vue.id, tmpId: vue.tmpId, release: vue.release, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   download: (store, vue) => {
@@ -167,15 +168,15 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { torrent: vue.torrent, movieId: vue.movie.imdbID, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   watch: (store, vue) => {
     let uri = `http://${ip}/torrent/watch`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { movieId: vue.movie.imdbID, torrent: vue.torrent, tmpId: vue.tmpId, authenticatedToken: localStorage.getItem('authenticatedToken') })
+      axios.post(uri, { movieId: vue.movie.imdbID, torrent: vue.torrent, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   initialize: (store, vue) => {
@@ -183,7 +184,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { hash: vue.$route.params.hash, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
 
@@ -194,7 +195,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   lang: (store, vue) => {
@@ -202,7 +203,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { lang: vue.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { store.commit('changeLang', result.data.data.lang); vue.$session.set('lang', result.data.data.lang); fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   getMyInfos: (store) => {
@@ -210,7 +211,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   getInfos: (store, login) => {
@@ -218,7 +219,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { user: login, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   updateLastname: (store, lastname) => {
@@ -226,7 +227,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { lastname: lastname, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   updateFirstname: (store, firstname) => {
@@ -234,7 +235,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { firstname: firstname, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   updateEmail: (store, email) => {
@@ -242,7 +243,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { email: email, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   updateAvatar: (store, avatar) => {
@@ -254,7 +255,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, formData, { headers: { 'Content-Type' : 'multipart/form-data' }})
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   updatePassword: (store, vue) => {
@@ -262,9 +263,10 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { password: vue.password, passwordConfirmation: vue.passwordConfirmation, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
+
 
 
   getMessages: (store, movieId) => {
@@ -272,7 +274,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { movieId: movieId, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   },
   sendMessage: (store, vue) => {
@@ -280,7 +282,7 @@ const actions = {
     return new Promise((fullfil, reject) => {
       axios.post(uri, { message: vue.input, movieId: vue.movie.imdbID, authenticatedToken: localStorage.getItem('authenticatedToken') })
         .then(result => { fullfil(result) })
-        .catch(err => { console.log(err); reject({ error: err })})
+        .catch(err => { console.error(err); reject({ error: err })})
     })
   }
 }

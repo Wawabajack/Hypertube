@@ -1,50 +1,46 @@
 <template>
-	<router-link tag="div" :to="{ name: 'movie', query : { tmp: movie.id, name: sansAccent(movie.original_title), release: movie.release_date.split('-')[0] } }">
+	<router-link tag="div" :to="{ name: 'movie', query : { id: movie.imdbID } }">
 		<figure class="search-item">
 			<i v-if="watched" class="el-icon-view"></i>
-			<img :alt="movie.original_title" :src="movie.poster_path ? 'https://image.tmdb.org/t/p/original/' + movie.poster_path : '/img/notfound.png'"/>
+			<img :alt="movie.Title" :src="!movie.Poster || movie.Poster === 'N/A' ? '/img/notfound.png' : movie.Poster" :onerror="imgError()"/>
 			<figcaption>
-				<h4>{{ movie.original_title }}</h4>
-				<p v-if="movie.vote_average" class="rating"><i class="icon el-icon-star-on"></i>  {{ movie.vote_average }} <span>/10</span></p>
-				<p v-if="movie.overview">{{ movie.overview.substr(0, 150) }} (...)</p>
-				<p v-if="movie.release_date" class="year">{{ movie.release_date }}</p>
+				<h4>{{ movie.Title }}</h4>
+				<p v-if="movie.imdbRating" class="rating"><i class="icon el-icon-star-on"></i>  {{ movie.imdbRating }} <span>/10</span></p>
+				<p v-if="movie.Plot">{{ $store.state.lang === 'en' ? movie.Plot.substr(0, 125) : fr_plot.substr(0, 125) }} (...)</p>
+				<p v-if="movie.Released" class="year">{{ movie.Released }}</p>
 			</figcaption>
 		</figure>
 	</router-link>
 </template>
 
 <script>
+import translate from 'translate'
+translate.engine = 'google'
+translate.key = 'AIzaSyAECIfL6JoLrIcSGjsWHtONieQdXbcwLhI'
+
 export default {
 	props: ['movie', 'userMovies'],
 	data() {
-    return {
-      watched: false
-    }
+        return {
+            watched: false,
+
+            fr_plot: ''
+        }
 	},
 	watch: {
 		'movie' (n) {
-			this.watched = false
-			if (this.userMovies) if (this.userMovies.indexOf(this.movie.id.toString()) >= 0) this.watched = true
-		}
+            this.watched = false
+			if (this.userMovies) if (this.userMovies.indexOf(this.movie.imdbID.toString()) >= 0) this.watched = true
+        }
 	},
-	created() {
-		if (this.userMovies) if (this.userMovies.indexOf(this.movie.id.toString()) >= 0) this.watched = true
+	async created() {
+		if (this.$store.state.session) {
+			if (this.userMovies) if (this.userMovies.indexOf(this.movie.imdbID.toString()) >= 0) this.watched = true
+			translate(this.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.fr_plot = res })
+		}
 	},
 	methods: {
-		sansAccent (str) {
-			var accent = [
-					/[\300-\306]/g, /[\340-\346]/g, // A, a
-					/[\310-\313]/g, /[\350-\353]/g, // E, e
-					/[\314-\317]/g, /[\354-\357]/g, // I, i
-					/[\322-\330]/g, /[\362-\370]/g, // O, o
-					/[\331-\334]/g, /[\371-\374]/g, // U, u
-					/[\321]/g, /[\361]/g, // N, n
-					/[\307]/g, /[\347]/g, // C, c
-			]
-			var noaccent = ['A','a','E','e','I','i','O','o','U','u','N','n','C','c'];
-			for (var i = 0; i < accent.length; i++) { str = str.replace(accent[i], noaccent[i]) }	
-			return str
-		}
+		imgError() { this.movie.Poster === '/img/notfound.png' }
 	}
 }
 </script>
@@ -144,19 +140,19 @@ figcaption input[type=submit] {
     box-shadow: 0 12px 15px rgba(240, 128, 128, 0.21);
 }
 .search-item .item-name {
-  padding: 8px 20px 2px;
+    padding: 8px 20px 2px;
 }
 .search-item .item-desc {
-  padding: 0 15px 10px 15px;
-  font-size: 14px;
-  color: #a3a3a3;
+    padding: 0 15px 10px 15px;
+    font-size: 14px;
+    color: #a3a3a3;
 }
 .search-item .img-item {
-  width: 100%;
-  height: 100%;
-  background-position: center;
-  background-size: cover;
-  display: block;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+    display: block;
 }
 .rating i {
     color: lightcoral;

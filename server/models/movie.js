@@ -42,18 +42,20 @@ module.exports.getInfoLast_Torrents = (data) => {
 		let index = 0
 		data.params.lastTorrents_infos = []
 		data.params.lastTorrents.forEach(torrent => {
-			if (torrent.episode_info && torrent.episode_info.imdb) {
-				request.get({
-					url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${torrent.episode_info.imdb}`,
-					json: true
-				}, (error, response, body) => {
-					if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-					else if (body.Response === 'True') {
-						data.params.lastTorrents_infos.push(body)
-						if (index++ === 24) fullfil(data)
-					} else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
-				})
-			} else if (index++ === 24) fullfil(data)
+            if (torrent.size / 1000000000 < 10) {
+                if (torrent.episode_info && torrent.episode_info.imdb) {
+                    request.get({
+                        url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${torrent.episode_info.imdb}`,
+                        json: true
+                    }, (error, response, body) => {
+                        if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+                        else if (body.Response === 'True') {
+                            data.params.lastTorrents_infos.push(body)
+                            if (index++ === 24) fullfil(data)
+                        } else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
+                    })
+                } else if (index++ === 24) fullfil(data)
+            } else if (index++ === 24) fullfil(data)
 		})
 	})
 }
@@ -63,18 +65,20 @@ module.exports.getInfoSeeders_Torrents = (data) => {
 		index = 0
 		data.params.seedersTorrents_infos = []
 		data.params.seedersTorrents.forEach(torrent => {
-			if (torrent.episode_info && torrent.episode_info.imdb) {
-				request.get({
-					url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${torrent.episode_info.imdb}`,
-					json: true
-				}, (error, response, body) => {
-					if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-					else if (body.Response === 'True') {
-						data.params.seedersTorrents_infos.push(body)
-						if (index++ === 24) fullfil(data)
-					} else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
-				})
-			} else if (index++ === 24) fullfil(data)
+			if (torrent.size / 1000000000 < 10) {
+                if (torrent.episode_info && torrent.episode_info.imdb) {
+                    request.get({
+                        url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${torrent.episode_info.imdb}`,
+                        json: true
+                    }, (error, response, body) => {
+                        if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+                        else if (body.Response === 'True') {
+                            data.params.seedersTorrents_infos.push(body)
+                            if (index++ === 24) fullfil(data)
+                        } else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
+                    })
+                } else if (index++ === 24) fullfil(data)
+            } else if (index++ === 24) fullfil(data)
 		})
 	})
 }
@@ -84,18 +88,20 @@ module.exports.getInfoLeechers_Torrents = (data) => {
 		index = 0
 		data.params.leechersTorrents_infos = []
 		data.params.leechersTorrents.forEach(torrent => {
-			if (torrent.episode_info && torrent.episode_info.imdb) {
-				request.get({
-					url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${torrent.episode_info.imdb}`,
-					json: true
-				}, (error, response, body) => {
-					if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
-					else if (body.Response === 'True') {
-						data.params.leechersTorrents_infos.push(body)
-						if (index++ === 24) fullfil(data)
-					} else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
-				})
-			} else if (index++ === 24) fullfil(data)
+			if (torrent.size / 1000000000 < 10) {
+                if (torrent.episode_info && torrent.episode_info.imdb) {
+                    request.get({
+                        url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${torrent.episode_info.imdb}`,
+                        json: true
+                    }, (error, response, body) => {
+                        if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
+                        else if (body.Response === 'True') {
+                            data.params.leechersTorrents_infos.push(body)
+                            if (index++ === 24) fullfil(data)
+                        } else reject({ res: data.res, en_error: 'Movie not found..', fr_error: 'Aucun film n\'a été trouvé..' })
+                    })
+                } else if (index++ === 24) fullfil(data)
+            } else if (index++ === 24) fullfil(data)
 		})
 	})
 }
@@ -158,7 +164,7 @@ module.exports.getInfosSearchedMovies = (data) => {
             data.params.movies_infos = []
             data.params.movies.forEach(imdbID => {
                 request.get({
-                    url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${imdbID}`,
+                    url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${imdbID}`,
                     json: true
                 }, (error, response, body) => {
                     if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })

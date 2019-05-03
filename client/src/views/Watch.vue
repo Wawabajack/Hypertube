@@ -47,9 +47,12 @@ export default {
             err_quality: ''
         }
     },
-    beforeCreate() {
-        if (!this.$store.state.session) this.$router.push({ name: 'login' })
-        else if (!this.$route.params.quality || !this.$route.params.hash) this.$router.push({ name: 'login' })
+    async beforeCreate() {
+        if (localStorage.getItem('authenticatedToken')) {
+            var result = await this.$store.dispatch('getLogin')
+            if (!result || !result.data.success) this.$router.push({ name: 'login' })
+            else if (!this.$route.params.quality || !this.$route.params.hash) this.$router.push({ name: 'login' })
+		} else this.$router.push({ name: 'login' })
     },
     created() {
         if (this.$store.state.session) {

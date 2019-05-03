@@ -4,6 +4,7 @@ const torrent = require('../models/movie')
 const utils = require('../models/utils')
 const user = require('../models/user')
 const fs = require('fs')
+const request = require('request')
 
 /**
  * Allow the user to get top torrents/movies ??
@@ -173,6 +174,12 @@ app.get('/subtitles/:hash/:language', (req, res) => {
         .then(torrent.getInfos)
         .then(torrent.getSubtitles)
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })
+})
+
+app.post('/testURL', (req, res) => {
+    request.head({ url: req.body.url }, (error, response, body) => {
+        res.send({ error: error, response: response, body: body })
+    })
 })
 
 module.exports = app

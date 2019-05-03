@@ -197,7 +197,9 @@ module.exports = app;
  * Check if `authenticatedToken` doesn't exist
  */
 function isGuest(req, res, next) {
-    if (req.body.authenticatedToken)
+    if (req.body.authenticatedToken) {
+        console.log('yo')
         res.status(403).send('You can\'t access this page')
+    }
     else next()
 }

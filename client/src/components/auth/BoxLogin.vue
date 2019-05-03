@@ -44,9 +44,9 @@
 </template>
 
 <script>
-import BoxForgot from "@/components/auth/BoxForgot.vue";
-import Vue from "vue";
-import Vuex from "vuex";
+import BoxForgot from "@/components/auth/BoxForgot.vue"
+import Vue from "vue"
+import Vuex from "vuex"
 export default {
   name: "BoxLogin",
   components: {
@@ -90,8 +90,8 @@ export default {
       var result = await this.$store.dispatch("logingit", this)
       if (result) {
         if (result.data.success) {
-          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" )
-          this.$router.push({ name: "home" })
+          var tmp = { authenticatedToken: localStorage.getItem('authenticatedToken'), id: result.data.data.user._id }
+          this.$socket.emit('USER_LOGIN', tmp)
         } else this.notify("Error!", result.data.en_error, "error")
       }
 		},
@@ -100,8 +100,7 @@ export default {
       var result = await this.$store.dispatch("login", this)
       if (result) {
         if (result.data.success) {
-          this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" )
-          this.$router.push({ name: "home" })
+          this.$socket.emit('USER_LOGIN', result.data.data.user._id)
         } else this.notify("Error!", result.data.en_error, "error")
       }
     },

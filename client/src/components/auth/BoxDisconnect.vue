@@ -15,6 +15,9 @@
 	export default {
 		// Name
 		name: 'BoxDisconnect',
+		created() {
+			this.$socket.emit('USER_LOGOUT');
+		}
 	}
 </script>
 

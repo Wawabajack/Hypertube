@@ -44,7 +44,10 @@ export default {
 		}
 	},
 	async beforeCreate() {
-		if (!this.$store.state.session) this.$router.push({ name: 'login'})
+		if (localStorage.getItem('authenticatedToken')) {
+            var result = await this.$store.dispatch('getLogin')
+            if (!result || !result.data.success) this.$router.push({ name: 'login' })
+		} else this.$router.push({ name: 'login' })
 	},
 	async created() {
 		if (this.$store.state.session) { this.getUser(); this.getMovies() }

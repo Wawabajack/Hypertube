@@ -34,19 +34,18 @@ export default {
         }
     },
     async beforeCreate() {
-        if (!this.$store.state.session) this.$router.push({ name: 'login' })
-        else {
-            if (this.$route.query.name) {
+        if (localStorage.getItem('authenticatedToken')) {
+            var result = await this.$store.dispatch('getLogin')
+            if (!result || !result.data.success) this.$router.push({ name: 'login' })
+            else if (this.$route.query.name) {
                 this.login = this.$route.query.name
                 var result = await this.$store.dispatch('getInfos', this.login)
-                if (result) {
-                    if (result.data.success) {
-                        this.login = result.data.data.user
-                        this.lastname = result.data.data.lastname
-                        this.firstname = result.data.data.firstname
-                        this.avatar = result.data.data.avatar
-                        this.lang = result.data.data.lang
-                    }
+                if (result && result.data.success) {
+                    this.login = result.data.data.user
+                    this.lastname = result.data.data.lastname
+                    this.firstname = result.data.data.firstname
+                    this.avatar = result.data.data.avatar
+                    this.lang = result.data.data.lang
                 }
             }
         }

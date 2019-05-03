@@ -37,7 +37,7 @@ module.exports.getUserByEmail = (data) => {
 module.exports.getUserByAuthToken = (data) => {
     return new Promise((fullfil, reject) => {
         mongodb.collection('user').findOne({ authenticatedToken: data.params.authenticatedToken }, (err, result) => {
-            if (result) { data.params.login = result.login; fullfil(data) }
+            if (result) { data.params.id = result._id; data.params.login = result.login; data.params.lang = result.lang; fullfil(data) }
             else if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
             else reject({ res: data.res, en_error: 'This token isn\'t valid anymore', fr_error: 'Ce token n\'est plus valide' })
         })
@@ -142,9 +142,9 @@ module.exports.updateSalt = (data) => {
 
 module.exports.updateLang = (data) => {
     return new Promise((fullfil, reject) => {
-        mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { lang: data.params.lang }}, (err, result) => {
+        mongodb.collection('user').updateOne({ login: data.params.login }, { $set : { lang: data.params.nlang }}, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured with the database', fr_error: 'Un problème est survenu avec la base de donnée' })
-            else fullfil(data)
+            else { fullfil(data) }
         })
     })
 }

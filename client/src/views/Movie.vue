@@ -24,8 +24,7 @@
                             </ul>
                         </div>
                         <div class='col-lg-7'>
-                            <img v-if="movie.Poster !== 'N/A'" :src='movie.Poster' :alt='movie.Title'>
-                            <img v-else src="img/notfound.png" :alt='movie.Title'>
+                            <img :src='poster' :alt='movie.Title'>
                         </div>
                     </div>
                 </div>
@@ -53,7 +52,7 @@
                             <td class="dl" :class="'loading-yts' + index" style="display:none"><i class="el-icon-loading"></i></td>
                         </tr>
                     </table>
-                    <h5 class='yts-title'>Rargb</h5>
+                    <h5 class='yts-title'>Rarbg</h5>
                     <table>
                         <tr>
                             <th class="quality">{{ $store.state.lang === 'en' ? 'Quality' : 'Qualité' }}</th>
@@ -77,7 +76,7 @@
                 <div class="col-md-5 chat-background">
                     <transition-group name="list" tag="div" id="chat-group" class="chat-group">
                         <p v-for="(message, index) in messages" :key="message.id + '-' + index" :class="message.exp === $store.state.session ? 'me' : 'notme'">
-                            <a :href="`/user?name=${message.exp}`"><span>{{ message.exp }}</span></a>
+                            <router-link tag="p" :to="{ name: 'user', query: { name: message.exp }}"><span>{{ message.exp }}</span></router-link>
                             {{ message.msg }}
                         </p>
                     </transition-group>
@@ -112,6 +111,7 @@ export default {
 
             id: '',
             movie: {},
+            poster: '',
             trailer: '',
             yts_torrents: {},
             rarbg_torrents: {},
@@ -151,11 +151,13 @@ export default {
                 if (result.data.success) {
                     this.getData = true
                     this.movie = result.data.data.movie
+                    var result1 = await this.$store.dispatch('testURL', this.movie.Poster)
+	                this.poster = (!result1.data.response || !result1.data.response.statusCode || (result1.data.response.statusCode !== 200 && result1.data.response.statusCode !== 201)) ? '/img/notfound.png' : this.movie.Poster
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.movie = result.data.data.movie; this.movie.Plot = res })
                     if (this.$store.state.lang === 'fr') translate(result.data.data.movie.Awards, { from: 'en', to: 'fr' }).then(res => { this.movie.Awards = res })
                     this.trailer = result.data.data.trailer
-                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 3 && torrent.quality !== '3D' })
-                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 3 && torrent.category.split('/').pop() !== '3D' })
+                    if (result.data.data.yts_torrents) this.yts_torrents = result.data.data.yts_torrents.filter(torrent => { return torrent.size_bytes / 1000000000 < 10 && torrent.quality !== '3D' })
+                    if (result.data.data.rarbg_torrents) this.rarbg_torrents = result.data.data.rarbg_torrents.filter(torrent => { return torrent.size / 1000000000 < 10 && torrent.category.split('/').pop() !== '3D' })
                     if (!result.data.data.yts_torrents && !result.data.data.rarbg_torrents) this.err = this.$store.state.lang === 'en' ? 'No torrents found for this movie, sorry..' : 'Aucun torrent n\'a été trouvé pour ce film, désolé..'
                     else this.getTorrent = true
                     if (result.data.data.tmpId) this.tmpId = result.data.data.tmpId
@@ -464,18 +466,21 @@ video {
     border-radius: 10px;
     background: rgba(240,128,128,0.4); 
 }
-.me a {
+.me p {
     color: white;
     text-decoration: none;
     position: relative;
+    display: inline;
 }
 .me span {
     display: none;
 }
-.notme a {
+.notme p {
     color: white;
     text-decoration: none;
     position: relative;
+    display: inline;
+    cursor: pointer;
 }
 p.notme span {
     font-size: x-small;

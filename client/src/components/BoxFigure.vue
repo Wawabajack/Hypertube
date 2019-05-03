@@ -2,7 +2,7 @@
 	<router-link tag="div" :to="{ name: 'movie', query : { id: movie.imdbID } }">
 		<figure class="search-item">
 			<i v-if="watched" class="el-icon-view"></i>
-			<img :alt="movie.Title" :src="!movie.Poster || movie.Poster === 'N/A' ? '/img/notfound.png' : movie.Poster" :onerror="imgError()"/>
+			<img :alt="movie.Title" :src="movie.Poster"/>
 			<figcaption>
 				<h4>{{ movie.Title }}</h4>
 				<p v-if="movie.imdbRating" class="rating"><i class="icon el-icon-star-on"></i>  {{ movie.imdbRating }} <span>/10</span></p>
@@ -22,25 +22,26 @@ export default {
 	props: ['movie', 'userMovies'],
 	data() {
         return {
-            watched: false,
+			watched: false,
+			poster: '',
 
             fr_plot: ''
         }
 	},
 	watch: {
-		'movie' (n) {
+		async 'movie' (n) {
             this.watched = false
 			if (this.userMovies) if (this.userMovies.indexOf(this.movie.imdbID.toString()) >= 0) this.watched = true
         }
 	},
 	async created() {
 		if (this.$store.state.session) {
+			var result = await this.$store.dispatch('testURL', this.movie.Poster)
+			//(!result.data.response || !result.data.response.statusCode || (result.data.response.statusCode !== 200 && result.data.response.statusCode !== 201)) 
+			//this.poster = (!result.data.response || !result.data.response.statusCode || (result.data.response.statusCode !== 200 && result.data.response.statusCode !== 201)) ? '/img/notfound.png' : this.movie.Poster
 			if (this.userMovies) if (this.userMovies.indexOf(this.movie.imdbID.toString()) >= 0) this.watched = true
 			translate(this.movie.Plot, { from: 'en', to: 'fr' }).then(res => { this.fr_plot = res })
 		}
-	},
-	methods: {
-		imgError() { this.movie.Poster === '/img/notfound.png' }
 	}
 }
 </script>

@@ -48,4 +48,35 @@ setInterval(() => {
     })
 }, 86400000)
 
-app.listen(4000, () => { console.info('Hypertube server online on port:', 4000) })
+const server = app.listen(4000, () => { console.info('Hypertube server online on port:', 4000) })
+
+const io = require('socket.io')(server, { pingTimeout: 60000 })
+
+let connectedUsers = []
+
+io.on('connection', (socket) => {
+    socket.on('USER_RELOAD', (data) => {
+        let users = {}
+        users.customId = data
+        users.userId = socket.id
+        connectedUsers.push(users)
+    })
+    socket.on('USER_LOGIN', (data) => {
+        let users = {}
+        users.customId = data.id
+        users.userId = socket.id
+        var test = connectedUsers.filter(user => { return user.customId === users.customId })
+        socket.broadcast.emit('CHECK_LOCALSTORAGE', data.authenticatedToken)
+        if (test.length === 0) { connectedUsers.push(users); io.to(users.userId).emit('CONNECTED') }
+        else { connectedUsers.push(users); io.to(users.userId).emit('ALREADY_CONNECTED') }
+    })
+    socket.on('USER_LOGOUT', () => {
+        let tmp = connectedUsers.filter(user => {
+            return user.userId != socket.id
+        })
+        connectedUsers = connectedUsers.filter(user => {
+            if (user.customId === tmp[0].customId) io.to(user.userId).emit('DISCONNECTED')
+            return user.customId != tmp[0].customId
+        })
+    })
+})

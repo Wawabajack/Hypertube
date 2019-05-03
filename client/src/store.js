@@ -126,7 +126,7 @@ const actions = {
     vue.$session.remove('user')
     vue.$session.set('lang')
     localStorage.removeItem('authenticatedToken')
-    store.commit('changeLogin', '' )
+    store.commit('changeLogin', '')
   },
 
 
@@ -187,8 +187,16 @@ const actions = {
         .catch(err => { console.error(err); reject({ error: err })})
     })
   },
+  testURL: (store, url) => {
+    let uri = `http://${ip}/torrent/testURL`
+    return new Promise((fullfil, reject) => {
+      axios.post(uri, { url: url, authenticatedToken: localStorage.getItem('authenticatedToken') })
+        .then(result => { fullfil(result) })
+        .catch(err => { console.error(err); reject({ error: err })})
+    })
+  },
 
-
+  
 
   watchedMovie: (store, vue) => {
     let uri = `http://${ip}/user/movies`
@@ -201,8 +209,8 @@ const actions = {
   lang: (store, vue) => {
     let uri = `http://${ip}/user/lang`
     return new Promise((fullfil, reject) => {
-      axios.post(uri, { lang: vue.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
-        .then(result => { store.commit('changeLang', result.data.data.lang); vue.$session.set('lang', result.data.data.lang); fullfil(result) })
+      axios.post(uri, { nlang: vue.lang, authenticatedToken: localStorage.getItem('authenticatedToken') })
+        .then(result => { store.commit('changeLang', result.data.data.nlang); vue.$session.set('lang', result.data.data.nlang); fullfil(result) })
         .catch(err => { console.error(err); reject({ error: err })})
     })
   },

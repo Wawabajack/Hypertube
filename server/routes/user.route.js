@@ -96,7 +96,7 @@ app.post('/updatePassword', isUser, (req, res) => {
  *          -----> error handling
  */
 app.post('/lang', isUser, (req, res) => {
-    utils.checkParams(req, res, [ 'lang' ])
+    utils.checkParams(req, res, [ 'nlang' ])
         .then(user.updateLang)
         .then(data => { data.res.send({ success: true, data: data.params }) })
         .catch(data => { data.res.send({ success: false, en_error: data.en_error, fr_error: data.fr_error }) })

@@ -1,8 +1,8 @@
 <template>
     <div class="container-fluid">
         <div class="row sort">
-            <div class="sort-options">
-                <h3>{{ $store.state.lang === 'en' ? 'Sorted by' : 'Trié par' }}</h3>
+            <div class="sort-options offset-md-2 col-md-4">
+                <h3>{{ $store.state.lang === 'en' ? 'Sorted by' : 'Ordonné par' }}</h3>
                 <p>{{ $store.state.lang === 'en' ? 'Title' : 'Titre' }}</p>
                 <el-radio-group v-model="title" size="mini" :disabled="sort_vote_average != 'Aucun' || sort_release_date != 'Aucun'">
                     <el-radio-button label="Aucun">{{ $store.state.lang === 'en' ? 'None' : 'Aucun' }}</el-radio-button>
@@ -21,6 +21,21 @@
                     <el-radio-button label="Décroissant">{{ $store.state.lang === 'en' ? 'Descending' : 'Décroissant' }}</el-radio-button>
                     <el-radio-button label="Croissant">{{ $store.state.lang === 'en' ? 'Ascending' : 'Croissant' }}</el-radio-button>
                 </el-radio-group>
+            </div>
+            <div class="fetch-options col-md-4">
+                <h3>{{ $store.state.lang === 'en' ? 'Fetch by' : 'Filtré par' }}</h3>
+                <p>{{ $store.state.lang === 'en' ? 'Popularity' : 'Popularité' }}</p>
+                <div class="block">
+                    <el-slider
+                    v-model="fetch_rate"
+                    range
+                    show-stops
+                    :max="10">
+                    </el-slider>
+                </div>
+                <p>{{ $store.state.lang === 'en' ? 'Release' : 'Date de sortie' }}</p>
+                <el-input-number size="mini" v-model="fetch_release_min" :max='fetch_release_max'></el-input-number>
+                <el-input-number size="mini" v-model="fetch_release_max" :min='fetch_release_min'></el-input-number>
             </div>
         </div>
         <div class="searchedMovies" v-if="!fr_error && !en_error">
@@ -46,7 +61,7 @@ export default {
     data() {
         return {
             movies: [],
-            tmp: [],
+            save: [],
             page: 1,
             userMovies: {},
             isSearch: false,
@@ -55,40 +70,52 @@ export default {
             sort_release_date: 'Aucun',
             title: 'Aucun',
 
-            genre: '-1',
-            language: 'en',
-            disc_vote_average: [0, 10],
-            disc_release_date_min: 1980,
-            disc_release_date_max: 2018,
-
             fr_error: '',
             en_error: '',
 
-            index: 0
+            index: 0,
+
+            fetch_rate: [0, 10],
+            fetch_release_min: 1950,
+            fetch_release_max: 2019
         }
     },
     watch: {
 		'$store.state.search' (n, o) {
             this.page = 1
             this.movies = []
-            this.tmp = []
+            this.save = []
+            this.fetched = []
             this.isSearch = this.$store.state.search ? true : false
             this.isSearch ? this.searchMovies() : ''
         },
         title() {
             if (this.title === 'Décroissant') this.movies.sort((a,b) => { return (a.Title > b.Title) ? 1 : ((b.Title > a.Title) ? -1 : 0) })
             else if (this.title === 'Croissant') this.movies.sort((a, b) => { return (a.Title > b.Title) ? -1 : ((b.Title > a.Title) ? 1 : 0) })
-            else this.movies = this.tmp.slice(0)
+            else this.movies = this.fetched.length > 0 ? this.fetched.slice(0) : this.save.slice(0)
+            if (this.title === 'Croissant') { this.movies.forEach(res => { console.log(res.Title) }) ; console.log(this.movies)}
         },
         sort_vote_average() {
             if (this.sort_vote_average === 'Décroissant') this.movies.sort((a, b) => { return b.imdbRating - a.imdbRating })
             else if (this.sort_vote_average === 'Croissant') this.movies.sort((a, b) => { return a.imdbRating - b.imdbRating })
-            else this.movies = this.tmp.slice(0)
+            else this.movies = this.fetched.length > 0 ? this.fetched.slice(0) : this.save.slice(0)
         },
         sort_release_date() {
             if (this.sort_release_date === 'Décroissant') this.movies.sort((a, b) => { var d1 = new Date(b.Year).getTime(); var d2 = new Date(a.Year).getTime(); return d1 - d2 })
             else if (this.sort_release_date === 'Croissant') this.movies.sort((a, b) => { var d1 = new Date(b.Year).getTime(); var d2 = new Date(a.Year).getTime(); return d2 - d1 })
-            else this.movies = this.tmp.slice(0)
+            else this.movies = this.fetched.length > 0 ? this.fetched.slice(0) : this.save.slice(0)
+        },
+        fetch_rate() {
+            this.fetched = this.save.filter(movie => { return movie.imdbRating >= this.fetch_rate[0] && movie.imdbRating <= this.fetch_rate[1] })
+            this.movies = this.fetched.slice(0)
+        },
+        fetch_release_min() {
+            this.fetched = this.save.filter(movie => { return movie.Year >= this.fetch_release_min && movie.Year <= this.fetch_release_max })
+            this.movies = this.fetched.slice(0)
+        },
+        fetch_release_max() {
+            this.fetched = this.save.filter(movie => { return movie.Year >= this.fetch_release_min && movie.Year <= this.fetch_release_max })
+            this.movies = this.fetched.slice(0)
         }
 	},
     beforeCreate() {
@@ -114,14 +141,16 @@ export default {
                 if (result.data.success) {
                     this.fr_error = ''
                     this.en_error = ''
-                    if (this.page === 1) { this.tmp = []; this.movies = [] }
-                    if (result.data.data.movies_infos) { 
+                    if (this.page === 1) { this.save = []; this.movies = [] }
+                    if (result.data.data.movies_infos) {
                         result.data.data.movies_infos.forEach(movie => {
-                            this.tmp.push(movie)
+                            this.save.push(movie)
                             this.movies.push(movie)
                         })
                         let cache = {}
-                        this.movies = this.movies.filter(element => { return cache[element.imdbID] ? 0 : cache[element.imdbID] = 1 })
+                        this.save = this.save.filter(movie => { return cache[movie.imdbID] ? 0 : cache[movie.imdbID] = 1 })
+                        this.save = this.save.filter(movie => { return movie.imdbRating >= this.fetch_rate[0] && movie.imdbRating <= this.fetch_rate[1] && movie.Year >= this.fetch_release_min && movie.Year <= this.fetch_release_max })
+                        this.movies = this.save.slice(0)
                     } else { this.fr_error = 'Aucun torrent pour ce film..'; this.en_error = 'No torrent for this movie..' }
                 } else {
                     this.fr_error = result.data.fr_error
@@ -138,6 +167,11 @@ export default {
         async getUser() {
             var result = await this.$store.dispatch('watchedMovie')
             if (result) if (result.data.success) this.userMovies = result.data.data.movies
+        },
+        reset() {
+            this.title = 'Aucun'
+            this.sort_vote_average = 'Aucun'
+            this.sort_release_date = 'Aucun'
         }
     }
 }
@@ -204,8 +238,5 @@ export default {
     color: white;
     text-align: center;
     margin-top: 116px;
-}
-.sort-options {
-    margin: auto;
 }
 </style>

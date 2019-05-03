@@ -30,20 +30,59 @@
         var result = await this.$store.dispatch('getLogin')
         if (result) {
           if (result.data.success) {
-            this.$store.state.session = result.data.data.login
-            this.$store.state.session = this.$session.get('user');
-            this.$store.state.lang = this.$session.get('lang')
+            this.$socket.emit('USER_RELOAD', result.data.data.id)
+            this.$session.set('user', result.data.data.login)
+            this.$session.set('lang', result.data.data.lang)
+            this.$store.commit('changeLogin', result.data.data.login)
+            this.$store.commit('changeLang', result.data.data.lang)
+            this.user_session = this.$session.get('user')
+          }
+        }
+      }
+    },
+    mounted() {
+			this.$options.sockets.DISCONNECTED = (data) => {
+        this.$router.push({ name: 'login' })
+        this.$store.dispatch('disconnect', this)
+      },
+      this.$options.sockets.ALREADY_CONNECTED = (data) => {
+        this.notify( "Already connected", "Enjoy Hypertube :-)", "success" )
+        this.$router.push({ name: "home" })
+      },
+      this.$options.sockets.CONNECTED = (data) => {
+        this.notify( "Login successful", "Welcome and enjoy Hypertube :-)", "success" )
+        this.$router.push({ name: "home" })
+      },
+      this.$options.sockets.CHECK_LOCALSTORAGE = async (data) => {
+        if (localStorage.getItem('authenticatedToken') && localStorage.getItem('authenticatedToken') === data) {
+          var result = await this.$store.dispatch('getLogin')
+          if (result && result.data.success) {
+            this.$session.set('user', result.data.data.login)
+            this.$session.set('lang', result.data.data.lang)
+            this.$store.commit('changeLogin', result.data.data.login)
+            this.$store.commit('changeLang', result.data.data.lang)
+            this.notify( "Already connected", "Enjoy Hypertube :-)", "success" )
+            this.$router.push({ name: "home" })
           }
         }
       }
     },
     async updated() {
-      this.user_session = this.$store.state.session;
+      this.user_session = this.$store.state.session
     },
     computed: {
       ...Vuex.mapState({
         user: state => state.session
       })
+    },
+    methods: {
+      notify(title, message, type) {
+        this.$notify({
+          title: title,
+          message: message,
+          type: type
+        })
+      }
     },
     components: {
       Navbar,

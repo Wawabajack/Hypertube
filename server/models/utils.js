@@ -17,7 +17,7 @@ module.exports.checkParams = (req, res, params) => {
                 else if (param === 'email') {
                     var regex = /^([a-zA-Z0-9-_.]){3,40}@([a-zA-Z0-9-_.]){3,40}\.([a-zA-Z0-9-_.]){1,40}$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Email isn\'t well formated', fr_error: 'L\'email n\'est pas correctement formaté' }) }
-                else if (param === 'lang') {
+                else if (param === 'nlang') {
                     var regex = /^(fr|en)$/
                     if (!regex.test(req.body[param])) reject({ res: res, en_error: 'Unavailable language', fr_error: 'Langue indisponible' }) }
                 else if (param === 'avatar') {

@@ -1,7 +1,7 @@
 const Promise = require('promise')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
-const transporter = nodemailer.createTransport({ service: 'Gmail', auth: { user: 'solarys02@gmail.com', pass: '50Cent50' }})
+const transporter = nodemailer.createTransport({ service: 'Gmail', auth: { user: 'XXXXXX', pass: 'XXXXXX' }})
 
 module.exports.checkParams = (req, res, params) => {
     return new Promise((fullfil, reject) => {
@@ -51,8 +51,8 @@ module.exports.checkParams = (req, res, params) => {
 module.exports.sendActivateAccountMail = (data) => {
     return new Promise((fullfil, reject) => {
         if (data.params.mail && data.params.email) {
-            var content = data.params.api ? 'Vous venez de lier votre compte avec ' + data.params.oauthMethod : '<a href=\'http://localhost:8080/activate/' + data.params.key + '\'>Cliquez ici</a> pour confirmer le compte'
-            var mailOptions = { from: 'solarys02@gmail.com', to: data.params.email, subject: 'Confirmation de compte Hypertube', html: content }
+            var content = data.params.api ? 'Vous venez de lier votre compte avec ' + data.params.oauthMethod : '<a href=\'http://XXXXXX/activate/' + data.params.key + '\'>Cliquez ici</a> pour confirmer le compte'
+            var mailOptions = { from: 'XXXXXX', to: data.params.email, subject: 'Confirmation de compte Hypertube', html: content }
             transporter.sendMail(mailOptions, (err, result) => {
                 if (err) reject({ res: data.res, en_error: 'An error occured when sending an email', fr_error: 'Un problème est survenue lors de l\'envoie du mail' })
                 else fullfil(data)
@@ -63,8 +63,8 @@ module.exports.sendActivateAccountMail = (data) => {
 
 module.exports.sendForgotPassMail = (data) => {
     return new Promise((fullfil, reject) => {
-        var content = '<a href=\'http://localhost:8080/reset/' + data.params.key + '\'>Cliquez ici</a> pour modifier votre mot de passe'
-        var mailOptions = { from: 'solarys02@gmail.com', to: data.params.email, subject: 'Changement de mot de passe Hypertube', html: content }
+        var content = '<a href=\'http://XXXXXX/reset/' + data.params.key + '\'>Cliquez ici</a> pour modifier votre mot de passe'
+        var mailOptions = { from: 'XXXXXX', to: data.params.email, subject: 'Changement de mot de passe Hypertube', html: content }
         transporter.sendMail(mailOptions, (err, result) => {
             if (err) reject({ res: data.res, en_error: 'An error occured when sending an email', fr_error: 'Un problème est survenue lors de l\'envoie du mail' })
             else fullfil(data)

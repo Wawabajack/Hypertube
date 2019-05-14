@@ -9,8 +9,8 @@ router.use(cors())
 
 const utils = require('../../models/utils')
 
-const TWITCH_APP_ID = '6dyk1rffx2sq6ger9kk7qpa588bbxn'
-const TWITCH_APP_SECRET = 'qo6x7m3z1wemmdol3ydf82k4t691qh'
+const TWITCH_APP_ID = 'XXXXXX'
+const TWITCH_APP_SECRET = 'XXXXXX'
 
 passport.serializeUser((user, done) => { done(null, user) })
 
@@ -20,7 +20,7 @@ passport.use(new TwitchStrategy({
         clientID: TWITCH_APP_ID,
         clientSecret: TWITCH_APP_SECRET,
         scope: "user_read",
-        callbackURL: "http://localhost:4000/auth/twitch/redirect"
+        callbackURL: "XXXXXX"
     }, (accessToken, refreshToken, profile, done) => {
         mongodb.collection('user').findOne({ $or: [{ login: profile._json.display_name }, { email: profile._json.email }, { authtwitchId: profile.id }] })
             .then(user => {
@@ -39,7 +39,7 @@ passport.use(new TwitchStrategy({
 
 router.get('/', passport.authenticate('twitch'))
 
-router.get('/redirect', passport.authenticate('twitch', { failureRedirect: 'http://localhost:8080/login?error=1' }), (req, res) => {
+router.get('/redirect', passport.authenticate('twitch', { failureRedirect: 'http://XXXXXX/login?error=1' }), (req, res) => {
     return new Promise((fullfil, reject) => {
         const data = {}
         data.params = req.user
@@ -47,7 +47,7 @@ router.get('/redirect', passport.authenticate('twitch', { failureRedirect: 'http
     })
     .then(utils.generateKey)
     .then(user.updateAuthenticatedToken)
-    .then(data => { res.redirect(`http://localhost:8080/login?loggin=${data.params.login}&key=${data.params.key}`) })
+    .then(data => { res.redirect(`http://XXXXXX/login?loggin=${data.params.login}&key=${data.params.key}`) })
 })
 
 module.exports = router

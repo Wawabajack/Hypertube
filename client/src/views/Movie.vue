@@ -98,7 +98,7 @@
 import BoxLoading from '@/components/BoxLoading.vue'
 import translate from 'translate'
 translate.engine = 'google'
-translate.key = 'AIzaSyAECIfL6JoLrIcSGjsWHtONieQdXbcwLhI'
+translate.key = 'XXXXXX'
 
 export default {
     data() {

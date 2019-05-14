@@ -12,7 +12,7 @@ const FFmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 FFmpeg.setFfmpegPath(FFmpegPath)
 const rimraf = require('rimraf')
 const OS = require('opensubtitles-api')
-const OpenSubtitles = new OS({ useragent: 'TemporaryUserAgent', ssl: true })
+const OpenSubtitles = new OS({ useragent: 'XXXXXX', ssl: true })
 const leftpad = require('left-pad')
 
 module.exports.getTopTorrents = (data) => {
@@ -45,7 +45,7 @@ module.exports.getInfoLast_Torrents = (data) => {
             if (torrent.size / 1000000000 < 10) {
                 if (torrent.episode_info && torrent.episode_info.imdb) {
                     request.get({
-                        url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${torrent.episode_info.imdb}`,
+                        url: `http://www.omdbapi.com/?apikey=XXXXXX&plot=short&i=${torrent.episode_info.imdb}`,
                         json: true
                     }, (error, response, body) => {
                         if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -68,7 +68,7 @@ module.exports.getInfoSeeders_Torrents = (data) => {
 			if (torrent.size / 1000000000 < 10) {
                 if (torrent.episode_info && torrent.episode_info.imdb) {
                     request.get({
-                        url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${torrent.episode_info.imdb}`,
+                        url: `http://www.omdbapi.com/?apikey=XXXXXX&plot=short&i=${torrent.episode_info.imdb}`,
                         json: true
                     }, (error, response, body) => {
                         if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -91,7 +91,7 @@ module.exports.getInfoLeechers_Torrents = (data) => {
 			if (torrent.size / 1000000000 < 10) {
                 if (torrent.episode_info && torrent.episode_info.imdb) {
                     request.get({
-                        url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${torrent.episode_info.imdb}`,
+                        url: `http://www.omdbapi.com/?apikey=XXXXXX&plot=short&i=${torrent.episode_info.imdb}`,
                         json: true
                     }, (error, response, body) => {
                         if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -164,7 +164,7 @@ module.exports.getInfosSearchedMovies = (data) => {
             data.params.movies_infos = []
             data.params.movies.forEach(imdbID => {
                 request.get({
-                    url: `http://www.omdbapi.com/?apikey=4402369e&plot=short&i=${imdbID}`,
+                    url: `http://www.omdbapi.com/?apikey=XXXXXX&plot=short&i=${imdbID}`,
                     json: true
                 }, (error, response, body) => {
                     if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -181,7 +181,7 @@ module.exports.getInfosSearchedMovies = (data) => {
 module.exports.getMovie = (data) => {
     return new Promise((fullfil, reject) => {
         request.get({
-            url: `http://www.omdbapi.com/?apikey=4402369e&plot=full&i=${data.params.movieId}`,
+            url: `http://www.omdbapi.com/?apikey=XXXXXX&plot=full&i=${data.params.movieId}`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })
@@ -204,7 +204,7 @@ module.exports.getDownloadedTorrents = (data) => {
 module.exports.getTrailer = (data) => {
     return new Promise((fullfil, reject) => {
         request.get({
-            url: `https://api.themoviedb.org/3/movie/${data.params.movie.imdbID}/videos?api_key=fcddca7f1ed48a172cfd4673adf01e53&site=Youtube&type=Trailer`,
+            url: `https://api.themoviedb.org/3/movie/${data.params.movie.imdbID}/videos?api_key=XXXXXX&site=Youtube&type=Trailer`,
             json: true
         }, (error, response, body) => {
             if (error) reject({ res: data.res, en_error: 'API issues', fr_error: 'Un problème est survenu avec l\'API' })

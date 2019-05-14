@@ -20,7 +20,7 @@ Vue.use(VueSession)
 
 import VueSocketio from 'vue-socket.io-extended'
 import io from 'socket.io-client'
-Vue.use(VueSocketio, io('http://localhost:4000'))
+Vue.use(VueSocketio, io('http://XXXXXX'))
 
 Vue.config.productionTip = false
 

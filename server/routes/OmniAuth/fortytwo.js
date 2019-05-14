@@ -9,8 +9,8 @@ router.use(cors())
 
 const utils = require('../../models/utils')
 
-const FORTYTWO_APP_ID = '01dac0c084ae2a6ac29ee0a880d2769e731682b34478bd75a8849dfd1650f08c'
-const FORTYTWO_APP_SECRET = '81fa82ff71cb6198ffb878256e9fa43e3eacaf18fac55754dcebdc87293ba056'
+const FORTYTWO_APP_ID = 'XXXXXX'
+const FORTYTWO_APP_SECRET = 'XXXXXX'
 
 passport.serializeUser((user, done) => { done(null, user) })
 
@@ -19,7 +19,7 @@ passport.deserializeUser((id, done) => { User.findById(id).then((user) => { done
 passport.use(new FortyTwoStrategy({
         clientID: FORTYTWO_APP_ID,
         clientSecret:FORTYTWO_APP_SECRET,
-        callbackURL: "http://localhost:4000/auth/fortytwo/redirect"
+        callbackURL: "XXXXXX"
     }, (accessToken, refreshToken, profile, done) => {
         mongodb.collection('user').findOne({ $or: [{ login: profile._json.login }, { email: profile._json.email }, { auth42Id: profile.id }] })
             .then(user => {
@@ -38,7 +38,7 @@ passport.use(new FortyTwoStrategy({
 
 router.get('/', passport.authenticate('42'))
 
-router.get('/redirect', passport.authenticate('42', { failureRedirect: 'http://localhost:8080/login?error=1' }), (req, res) => {
+router.get('/redirect', passport.authenticate('42', { failureRedirect: 'http://XXXXXX/login?error=1' }), (req, res) => {
     return new Promise((fullfil, reject) => {
         const data = {}
         data.params = req.user
@@ -46,7 +46,7 @@ router.get('/redirect', passport.authenticate('42', { failureRedirect: 'http://l
     })
     .then(utils.generateKey)
     .then(user.updateAuthenticatedToken)
-    .then(data => { res.redirect(`http://localhost:8080/login?loggin=${data.params.login}&key=${data.params.key}`) })
+    .then(data => { res.redirect(`http://XXXXXX/login?loggin=${data.params.login}&key=${data.params.key}`) })
 })
 
 module.exports = router

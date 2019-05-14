@@ -9,8 +9,8 @@ router.use(cors())
 
 const utils = require('../../models/utils')
 
-const DISCORD_APP_ID = '569901989304205357'
-const DISCORD_APP_SECRET = 'C9EVpywxZeCOmPDiEvN0615W8Q6gO7Cb'
+const DISCORD_APP_ID = 'XXXXXX'
+const DISCORD_APP_SECRET = 'XXXXXX'
 
 passport.serializeUser((user, done) => { done(null, user) })
 
@@ -20,7 +20,7 @@ passport.use(new DiscordStrategy({
         clientID: DISCORD_APP_ID,
         clientSecret: DISCORD_APP_SECRET,
         scope: "identify email",
-        callbackURL: "http://localhost:4000/auth/discord/redirect"
+        callbackURL: "XXXXXX"
     }, (accessToken, refreshToken, profile, done) => {
         mongodb.collection('user').findOne({ $or: [{ login: profile.username }, { email: profile.email }, { authDiscordId: profile.id }] })
             .then(user => {
@@ -39,7 +39,7 @@ passport.use(new DiscordStrategy({
 
 router.get('/', passport.authenticate('discord'))
 
-router.get('/redirect', passport.authenticate('discord', { failureRedirect: 'http://localhost:8080/login?error=1' }), (req, res) => {
+router.get('/redirect', passport.authenticate('discord', { failureRedirect: 'http://XXXXXX/login?error=1' }), (req, res) => {
     return new Promise((fullfil, reject) => {
         const data = {}
         data.params = req.user
@@ -47,7 +47,7 @@ router.get('/redirect', passport.authenticate('discord', { failureRedirect: 'htt
     })
     .then(utils.generateKey)
     .then(user.updateAuthenticatedToken)
-    .then(data => { res.redirect(`http://localhost:8080/login?loggin=${data.params.login}&key=${data.params.key}`) })
+    .then(data => { res.redirect(`http://XXXXXX/login?loggin=${data.params.login}&key=${data.params.key}`) })
 })
 
 module.exports = router

@@ -12,7 +12,7 @@ Le lecteur sera directement intégré au site, et les vidéos seront télécharg
 - MongoDB
 - Socket.io
 
-### Fonctionnalités
+## Fonctionnalités
 
 - Connexion et inscrition via local stratégie et omniauth (Google, Slack, Discord, Github, Twitch, 42)
 - Recherche de torrent via RARBG et YTS.AM

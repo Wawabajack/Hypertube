@@ -3,12 +3,12 @@
         <div class='videojs'>
             <div class="video-inner-container" v-show="available">
                 <video id="myPlayer" controls width="640" height="264" class="video-js vjs-live vjs-fluid vjs-default-skin vjs-big-play-centered">
-                    <source :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/${this.$route.params.quality}`" type="video/webm" :label="this.$route.params.quality" :res="this.$route.params.quality">
-                    <source v-if="this.$route.params.quality !== '240'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/240`" type="video/webm" label="240" res="240">
-                    <source v-if="this.$route.params.quality !== '360'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/360`" type="video/webm" label="360" res="360">
-                    <source v-if="this.$route.params.quality !== '480'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/480`" type="video/webm" label="480" res="480">
-                    <source v-if="this.$route.params.quality !== '720'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/720`" type="video/webm" label="720" res="720">
-                    <source v-if="this.$route.params.quality !== '1080'" :src="`http://localhost:4000/torrent/convert/${this.$route.params.hash}/1080`" type="video/webm" label="1080" res="1080">
+                    <source :src="`http://XXXXXX/torrent/convert/${this.$route.params.hash}/${this.$route.params.quality}`" type="video/webm" :label="this.$route.params.quality" :res="this.$route.params.quality">
+                    <source v-if="this.$route.params.quality !== '240'" :src="`http://XXXXXX/torrent/convert/${this.$route.params.hash}/240`" type="video/webm" label="240" res="240">
+                    <source v-if="this.$route.params.quality !== '360'" :src="`http://XXXXXX/torrent/convert/${this.$route.params.hash}/360`" type="video/webm" label="360" res="360">
+                    <source v-if="this.$route.params.quality !== '480'" :src="`http://XXXXXX/torrent/convert/${this.$route.params.hash}/480`" type="video/webm" label="480" res="480">
+                    <source v-if="this.$route.params.quality !== '720'" :src="`http://XXXXXX/torrent/convert/${this.$route.params.hash}/720`" type="video/webm" label="720" res="720">
+                    <source v-if="this.$route.params.quality !== '1080'" :src="`http://XXXXXX/torrent/convert/${this.$route.params.hash}/1080`" type="video/webm" label="1080" res="1080">
                 </video>
             </div>
             <div class='err' v-show="err_hash_fr || err_hash_en || err_quality">
@@ -93,7 +93,7 @@ export default {
                         kind: 'captions',
                         label: subtitle.lang,
                         language: subtitle.lang,
-                        src: `http://localhost:4000/torrent/subtitles/${this.$route.params.hash}/${subtitle.lang}`,
+                        src: `http://XXXXXX/torrent/subtitles/${this.$route.params.hash}/${subtitle.lang}`,
                     }, true)
                 })
             }
